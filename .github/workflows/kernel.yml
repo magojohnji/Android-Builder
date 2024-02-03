@@ -35,11 +35,11 @@ jobs:
           echo "CONFIGS<<EOF" >> $GITHUB_OUTPUT
           jq -s '[.[][]]' Kernel/configs/*.config.json >> $GITHUB_OUTPUT
           echo "EOF" >> $GITHUB_OUTPUT
-
       # Set compile time.
       - name: ⏰ Set builddate
         id: generate-builddate
         run: echo "BUILDDATE=$(date +'%Y%m%d')" >> $GITHUB_OUTPUT
+
 
   Build-Kernel:
     name: "🐎 Build kernel"
@@ -88,7 +88,7 @@ jobs:
       ENABLE_LXC: ${{ matrix.CONFIG.enableLXC }}
 
       # Whether to use ccache to speed up compilation
-      ENABLE_CCACHE: ${{ matrix.CONFIG.enableCcache }}
+      ENABLE_CCACHE: ${{ matrix.CONFIG.ccache }}
 
       # AnyKernel3 configuration
       ENABLE_ANYKERNEL3: ${{ matrix.CONFIG.AnyKernel3.enable }}
