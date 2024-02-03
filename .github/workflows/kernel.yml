@@ -120,8 +120,8 @@ jobs:
           sudo apt install -y build-essential bc gcc-aarch64-linux-gnu gcc-arm-linux-gnueabi libssl-dev libfl-dev
           sudo apt install -y pwgen libswitch-perl policycoreutils minicom libxml-sax-base-perl libxml-simple-perl 
           sudo apt install -y llvm g++-multilib bison gperf zlib1g-dev automake
-          sudo apt install -y zip unzip tar gzip bzip2 rar unrar unlzma xz p7zip-full
-          # sudo apt install -y lzop cabextract cpio lrzuntar unace unalz arj nomarch zpaq unzstd brotli uudecode
+          sudo apt install -y zip unzip tar gzip bzip2 rar unrar p7zip-full
+          # sudo apt install -y unlzma lzop cabextract cpio lrzuntar unace unalz arj nomarch zpaq unzstd brotli uudecode
           mkdir -p $GITHUB_WORKSPACE/kernel_workspace
 
       # Set device name.
