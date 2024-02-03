@@ -36,7 +36,9 @@
         "branch": "master",
         "url": "https://android.googlesource.com/platform/prebuilts/clang/host/linux-x86/+archive/refs/heads/master/clang-r510928.tar.gz",
         "name": "clang",
-        "binPath": ["bin"]
+        "binaryEnv": [
+          "bin"
+        ]
       }
     ],
 
