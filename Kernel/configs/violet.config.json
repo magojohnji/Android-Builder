@@ -15,7 +15,7 @@
     "kernelSource": {
       "link": "https://github.com/magojohnji/android_kernel_xiaomi_violet",
       "branch": "14",
-      "config": "violet-perf_defconfig",
+      "defconfig": "violet-perf_defconfig",
       "arch": "arm64",
       "need-dtbo": false
     },
