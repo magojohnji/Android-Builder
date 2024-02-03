@@ -167,7 +167,8 @@ jobs:
             cd ${{ env.KERNEL_NAME }}
             aria2c ${{ env.KERNEL_LINK }}
             kernel_file_name=$(ls)
-            aria2c 
+            aria2c https://github.com/magojohnji/Android-Builder/raw/main/.Scripts/Extract.sh
+            chmod +x ./extract.sh
             ./extract.sh $kernel_file_name
             rm -rf $kernel_file_name
           fi
@@ -526,24 +527,21 @@ jobs:
           retention-days: 7
 
       - name: ⏰ Pack Anykernel3
-        if: ${{ env.USE_ANYKERNEL3 == 'true' }}
+        if: ${{ env.ENABLE_ANYKERNEL3 == 'true' }}
         env:
           PARAMS: "${{ toJSON(matrix.CONFIG.AnyKernel3) }}"
           ARCH: ${{ steps.generate-args.outputs.ARCH }}
           ANYKERNEL3_FILE: "${{ env.WORKSPACE }}/AnyKernel3-${{ env.KERNEL_NAME }}-${{ env.BUILD_DATE }}"
         run: |
-          if echo -n '${{ env.PARAMS }}' | jq -e 'has("custom")' > /dev/null; then
-            CUSTOM_ANYKERNEL3=$(echo -n '${{ env.PARAMS }}' | jq -r ".custom")
-            ANYKERNEL_REPO=$(echo $CUSTOM_ANYKERNEL3 | jq -r ".link")
-            ANYKERNEL_BRANCH=$(echo $CUSTOM_ANYKERNEL3 | jq -r ".branch")
-            git clone --recursive --depth=1 -j $(nproc) --branch $ANYKERNEL_BRANCH $ANYKERNEL_REPO AnyKernel3
-            echo "🤔 Use custom AnyKernel3 => ($ANYKERNEL_REPO)"
-          else
+          if [ ${{ env.AK3_LINK }} = '' ]; then
             git clone --recursive --depth=1 -j $(nproc) https://github.com/osm0sis/AnyKernel3 AnyKernel3
             sed -i 's/do.devicecheck=1/do.devicecheck=0/g' AnyKernel3/anykernel.sh
             sed -i 's!block=/dev/block/platform/omap/omap_hsmmc.0/by-name/boot;!block=auto;!g' AnyKernel3/anykernel.sh
             sed -i 's/is_slot_device=0;/is_slot_device=auto;/g' AnyKernel3/anykernel.sh
             echo "🤔 Use origin Anykernel3 => (https://github.com/osm0sis/AnyKernel3)"
+          else
+            git clone --recursive --depth=1 -j $(nproc) --branch ${{ env.AK3_BRANCH }} ${{ env.AK3_LINK }} AnyKernel3
+            echo "🤔 Use custom AnyKernel3 => (${{ env.AK3_LINK }})"
           fi
 
 
