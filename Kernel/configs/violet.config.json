@@ -34,10 +34,10 @@
     "toolchains": [
       {
         "branch": "master",
-        "url": "https://android.googlesource.com/platform/prebuilts/clang/host/linux-x86/+archive/refs/heads/master/clang-r510928.tar.gz",
+        "url": "https://android.googlesource.com/platform/prebuilts/clang/host/linux-x86",
         "name": "clang",
         "binaryEnv": [
-          "bin"
+          "clang-r510928/bin"
         ]
       }
     ],
