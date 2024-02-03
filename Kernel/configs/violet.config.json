@@ -48,7 +48,7 @@
 
     "params": {
       "CC": "clang",
-      "externalCommand": {
+      "externalCommands": {
         "CROSS_COMPILE": "aarch64-linux-gnu-",
         "LLVM": "1",
         "LLVM_IAS": "1"
