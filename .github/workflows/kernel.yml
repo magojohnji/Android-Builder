@@ -434,7 +434,6 @@ jobs:
 
           make ${{ env.ARGS }} ${{ env.KERNEL_DEFCONFIG_PATH }}
           make ${{ env.ARGS }}
-          # tree ${{ env.OUT_DIR }}
 
       - name: Setting up KernelSU boot image
         if: env.MK_BOOT == 'true'
