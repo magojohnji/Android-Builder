@@ -389,7 +389,7 @@ jobs:
         if: ${{ env.ENABLE_KERNELSU == 'true' }}
         run: |
           # Define the directory containing the patches
-          PATCHES_DIR="${{ github.workspace }}/patches"
+          PATCHES_DIR="${{ env.KERNEL_NAME }}"
 
           # Check if the patches directory exists and is not empty
           if [ -d "$PATCHES_DIR" ] && [ "$(ls -A $PATCHES_DIR)" ]; then
@@ -432,7 +432,7 @@ jobs:
           else
             export KBUILD_BUILD_USER=${{ env.BUILDER }}
           fi
-          
+
           make ${{ env.ARGS }} ${{ env.KERNEL_DEFCONFIG_PATH }}
           make ${{ env.ARGS }}
           # tree ${{ env.OUT_DIR }}
