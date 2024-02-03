@@ -262,7 +262,7 @@ jobs:
         run: |
           echo "🤔 PATH Variable: $PATH"
 
-          ARCH=$(echo $PARAMS | jq -r ".ARCH")
+          ARCH=${{ env.KERNEL_ARCH }}
           CC=$(echo $PARAMS | jq -r ".CC")
 
           args="-j${{ env.THREAD }} O=${{ env.OUT_DIR }} ARCH=$ARCH"
