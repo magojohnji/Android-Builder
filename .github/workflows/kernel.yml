@@ -2,9 +2,17 @@ name: Build kernels
 
 on:
   push:
-    paths:
-      - ".github/workflows/kernel.yml"
+    paths-ignore:
+      - 'website/**'
+  pull_request: 
+  repository_dispatch:
   workflow_dispatch:
+    inputs:
+      release:
+        description: "DEBUG"
+        required: true
+        default: false
+        type: boolean            
   schedule:
     - cron: "14 13 * * 5"
 
@@ -48,27 +56,44 @@ jobs:
       WORKSPACE: ${{ github.workspace }}
       BUILD_DATE: "${{ needs.Read-configuration.outputs.BUILD_DATE }}"
 
+      # General configuration
+      KERNEL_NAME: ${{ matrix.CONFIG.general.name }}
+      BUILD_HOST: ${{ matrix.CONFIG.general.build-host }}
+      BUILDER: ${{ matrix.CONFIG.general.builder-name }}
+      ENABLE_KP: ${{ matrix.CONFIG.general.enableKprobes }}
+      ENABLE_OFS: ${{ matrix.CONFIG.general.enableOverlayFS }}
+      DISABLE_LTO: ${{ matrix.CONFIG.general.disable-lto }}
+      DISABLE_CC_WERROR: ${{ matrix.CONFIG.general.disable-cc-werror }}
+      RELEASE: ${{ matrix.CONFIG.general.release }}
+      DEBUG: ${{ matrix.CONFIG.general.debug }}
+
       # Kernel source configuration
-      KERNEL_NAME: ${{ matrix.CONFIG.kernelSource.name }}
-      KERNEL_REPO: ${{ matrix.CONFIG.kernelSource.repo }}
+      KERNEL_LINK: ${{ matrix.CONFIG.kernelSource.link }}
       KERNEL_BRANCH: ${{ matrix.CONFIG.kernelSource.branch }}
-      KERNEL_DEVICE: ${{ matrix.CONFIG.kernelSource.device }}
       KERNEL_DEFCONFIG_PATH: ${{ matrix.CONFIG.kernelSource.defconfig }}
+      KERNEL_ARCH: ${{ matrix.CONFIG.kernelSource.arch }}
+      NEED_DTBO: ${{ matrix.CONFIG.kernelSource.need-dtbo }}
+
+      # KernelSU configuration
+      ENABLE_KERNELSU: ${{ matrix.CONFIG.withKernelSU.enable }}
+      KERNELSU_INSTALLER: ${{ matrix.CONFIG.withKernelSU.installer }}
+      KERNELSU_TAG: ${{ matrix.CONFIG.withKernelSU.tag }}
+      APPLY_KSU_PATCH: ${{ matrix.CONFIG.withKernelSU.apply-patch }}
+      KSU_EXPECTED_SIZE: ${{ matrix.CONFIG.withKernelSU.ksu_expected_size }}
+      KSU_EXPECTED_HASH: ${{ matrix.CONFIG.withKernelSU.ksu_expected_hash }}
+      MK_BOOT: ${{ matrix.CONFIG.withKernelSU.make_bootimg }}
+      BOOTIMG_LINK: ${{ matrix.CONFIG.withKernelSU.bootimg_link }}
+
+      # Whether to enable LXC docker
+      ENABLE_LXC: ${{ matrix.CONFIG.enableLXC }}
 
       # Whether to use ccache to speed up compilation
       ENABLE_CCACHE: ${{ matrix.CONFIG.enableCcache }}
 
-      # Whether to use ANYKERNEL3 packaged flash package
-      USE_ANYKERNEL3: ${{ matrix.CONFIG.AnyKernel3.use }}
-
-      # Whether to publish
-      CONFIRM_RELEASE: ${{ matrix.CONFIG.AnyKernel3.release }}
-
-      # Whether to enable KernelSU
-      ENABLE_KERNELSU: ${{ matrix.CONFIG.enableKernelSU }}
-
-      # Whether to enable LXC docker
-      ENABLE_LXC: ${{ matrix.CONFIG.enableLXC }}
+      # AnyKernel3 configuration
+      ENABLE_ANYKERNEL3: ${{ matrix.CONFIG.AnyKernel3.enable }}
+      AK3_LINK: ${{ matrix.CONFIG.AnyKernel3.link }}
+      AK3_BRANCH: ${{ matrix.CONFIG.AnyKernel3.branch }}
 
       # Set output & ccache directory
       OUT_DIR: "${{ github.workspace }}/out"
@@ -87,15 +112,22 @@ jobs:
       # Install prerequisites for Ubuntu
       - name: ⭐ Install prerequisites
         run: |
-          sudo apt-get update
-          sudo apt-get install -y curl git ftp lftp wget libarchive-tools ccache python2 python2-dev python3
-          sudo apt-get install -y pngcrush schedtool dpkg-dev liblz4-tool make optipng maven device-tree-compiler 
-          sudo apt-get install -y libc6-dev-i386 lib32ncurses5-dev libx11-dev lib32z-dev libgl1-mesa-dev xsltproc
-          sudo apt-get install -y libxml2-utils libbz2-dev libbz2-1.0 libghc-bzlib-dev squashfs-tools lzop flex tree
-          sudo apt-get install -y build-essential bc gcc-aarch64-linux-gnu gcc-arm-linux-gnueabi libssl-dev libfl-dev
-          sudo apt-get install -y pwgen libswitch-perl policycoreutils minicom libxml-sax-base-perl libxml-simple-perl 
-          sudo apt-get install -y zip unzip tar gzip bzip2 rar unrar llvm g++-multilib bison gperf zlib1g-dev automake
+          sudo apt update
+          sudo apt install -y curl git ftp lftp wget aria2 libarchive-tools ccache python2 python2-dev python3
+          sudo apt install -y pngcrush schedtool dpkg-dev liblz4-tool make optipng maven device-tree-compiler 
+          sudo apt install -y libc6-dev-i386 lib32ncurses5-dev libx11-dev lib32z-dev libgl1-mesa-dev xsltproc
+          sudo apt install -y libxml2-utils libbz2-dev libbz2-1.0 libghc-bzlib-dev squashfs-tools lzop flex tree
+          sudo apt install -y build-essential bc gcc-aarch64-linux-gnu gcc-arm-linux-gnueabi libssl-dev libfl-dev
+          sudo apt install -y pwgen libswitch-perl policycoreutils minicom libxml-sax-base-perl libxml-simple-perl 
+          sudo apt install -y llvm g++-multilib bison gperf zlib1g-dev automake
+          sudo apt install -y zip unzip tar gzip bzip2 rar unrar unlzma xz p7zip-full
+          # sudo apt install -y lzop cabextract cpio lrzuntar unace unalz arj nomarch zpaq unzstd brotli uudecode
+          mkdir -p $GITHUB_WORKSPACE/kernel_workspace
 
+      # Set device name.
+      - name: ⏰ Set device name
+        run: echo "DEVICE=$(echo ${{ env.KERNEL_DEFCONFIG_PATH }} | sed 's!vendor/!!;s/_defconfig//;s/_user//;s/-perf//')" >> $GITHUB_ENV
+      
       # Initialize ccache
       - name: 🚄 Setup ccache
         if: ${{ env.ENABLE_CCACHE == 'true' }}
@@ -126,9 +158,19 @@ jobs:
             cache-${{ env.KERNEL_NAME }}-${{env.HASH}}-
             cache-${{ env.KERNEL_NAME }}-
 
-      - name: 🌟 Clone kernel source => (${{ env.KERNEL_REPO }})
+      - name: 🌟 Clone kernel source => (${{ env.KERNEL_LINK }})
         run: |
-          git clone --recursive --depth=1 -j $(nproc) --branch ${{ env.KERNEL_BRANCH }} ${{ env.KERNEL_REPO }} ${{ env.KERNEL_NAME }}
+          if [[ ${{ env.KERNEL_LINK }} =~ git ]]; then
+            git clone --recursive --depth=1 -j $(nproc) --branch ${{ env.KERNEL_BRANCH }} ${{ env.KERNEL_LINK }} ${{ env.KERNEL_NAME }}
+          else
+            mkdir ${{ env.KERNEL_NAME }}
+            cd ${{ env.KERNEL_NAME }}
+            aria2c ${{ env.KERNEL_LINK }}
+            kernel_file_name=$(ls)
+            aria2c 
+            ./extract.sh $kernel_file_name
+            rm -rf $kernel_file_name
+          fi
           # tree ${{ env.KERNEL_NAME }}
 
       - name: 💫 Get toolchains
@@ -150,7 +192,7 @@ jobs:
               mkdir -p $toolchain_name
 
               # Download archive
-              wget "$toolchain_url"
+              aria2c "$toolchain_url"
 
               # Get filename
               filename="${toolchain_url##*/}"
@@ -189,6 +231,27 @@ jobs:
             done
           done
 
+      - name: Download magiskboot for linux
+        if: env.MK_BOOT == 'true'
+        run: |
+          cd $GITHUB_WORKSPACE/kernel_workspace
+          mkdir tools
+          git clone --recurse-submodules https://github.com/magojohnji/magiskboot-linux.git magiskboot
+          cd magiskboot
+          cp ./x86_64/magiskboot ../tools/
+          cd ..
+          rm -rf magiskboot
+
+      - name: Download source boot image file for KernelSU 
+        if: env.MK_BOOT == 'true'
+        run: |
+          cd $GITHUB_WORKSPACE/kernel_workspace
+          mkdir bootimg_tmp
+          aria2c -o ./bootimg_tmp/boot-source-kernelsu.img ${{ env.BOOTIMG_LINK }}
+          if [ -f ./bootimg_tmp/boot-source-kernelsu.img ]; then
+              echo "SOURCE_KERNELSU_BOOTIMG_PATH=$GITHUB_WORKSPACE/kernel_workspace/bootimg_tmp/boot-source-kernelsu.img" >> $GITHUB_ENV
+          fi
+        
       - name: 😎 Set build args
         id: generate-args
         env:
@@ -241,15 +304,39 @@ jobs:
             rm -rf "./drivers/kernelsu"
           fi
 
-          # Apply new KernelSU patches
-          curl -LSs "https://raw.githubusercontent.com/tiann/KernelSU/main/kernel/setup.sh" | bash -s main
+          # Apply KernelSU
+          if [ ${{ env.APPLY_KSU_PATCH }} = true ]; then
+              bash $GITHUB_WORKSPACE/patches/patches.sh
+              if grep -q "CONFIG_KSU" arch/${{ env.ARCH }}/configs/${{ env.KERNEL_CONFIG }}; then
+                  sed -i 's/# CONFIG_KSU is not set/CONFIG_KSU=y/g' arch/${{ env.ARCH }}/configs/${{ env.KERNEL_CONFIG }}
+                  sed -i 's/CONFIG_KSU=n/CONFIG_KSU=y/g' arch/${{ env.ARCH }}/configs/${{ env.KERNEL_CONFIG }}
+              else
+                  echo "CONFIG_KSU=y" >> arch/${{ env.ARCH }}/configs/${{ env.KERNEL_CONFIG }}
+              fi
+          fi
 
-          echo -e "CONFIG_KPROBES=y" >> arch/${{ env.ARCH }}/configs/${{ env.KERNEL_DEFCONFIG_PATH }}
-          echo -e "CONFIG_HAVE_KPROBES=y" >> arch/${{ env.ARCH }}/configs/${{ env.KERNEL_DEFCONFIG_PATH }}
-          echo -e "CONFIG_KPROBE_EVENTS=y" >> arch/${{ env.ARCH }}/configs/${{ env.KERNEL_DEFCONFIG_PATH }}
+          if [ ${{ env.ADD_KPROBES_CONFIG }} = true -a ${{ env.APPLY_KSU_PATCH }} != true ]; then
+              echo "CONFIG_MODULES=y" >> arch/${{ env.ARCH }}/configs/${{ env.KERNEL_CONFIG }}
+              echo "CONFIG_KPROBES=y" >> arch/${{ env.ARCH }}/configs/${{ env.KERNEL_CONFIG }}
+              echo "CONFIG_HAVE_KPROBES=y" >> arch/${{ env.ARCH }}/configs/${{ env.KERNEL_CONFIG }}
+              echo "CONFIG_KPROBE_EVENTS=y" >> arch/${{ env.ARCH }}/configs/${{ env.KERNEL_CONFIG }}
+          fi
 
-          cat arch/${{ env.ARCH }}/configs/${{ env.KERNEL_DEFCONFIG_PATH }}
+          if [ ${{ env.ADD_OVERLAYFS_CONFIG }} = true ]; then
+              echo "CONFIG_OVERLAY_FS=y" >> arch/${{ env.ARCH }}/configs/${{ env.KERNEL_CONFIG }}
+          fi
 
+          if [ ${{ env.DISABLE-LTO }} = true ]; then
+              sed -i 's/CONFIG_LTO=y/CONFIG_LTO=n/' arch/${{ env.ARCH }}/configs/${{ env.KERNEL_CONFIG }}
+              sed -i 's/CONFIG_LTO_CLANG=y/CONFIG_LTO_CLANG=n/' arch/${{ env.ARCH }}/configs/${{ env.KERNEL_CONFIG }}
+              sed -i 's/CONFIG_THINLTO=y/CONFIG_THINLTO=n/' arch/${{ env.ARCH }}/configs/${{ env.KERNEL_CONFIG }}
+              echo "CONFIG_LTO_NONE=y" >> arch/${{ env.ARCH }}/configs/${{ env.KERNEL_CONFIG }}
+          fi
+
+          if [ ${{ env.DISABLE_CC_WERROR }} = true ]; then
+              echo "CONFIG_CC_WERROR=n" >> arch/${{ env.ARCH }}/configs/${{ env.KERNEL_CONFIG }}
+          fi
+  
       - name: 😋 Setup LXC docker
         working-directory: ${{ env.KERNEL_NAME }}
         env:
@@ -293,17 +380,90 @@ jobs:
             echo "🎖️ Apply xt_qtaguid.patch"
           fi
 
+      - name: 😋 Apply kernel patches
+        working-directory: ${{ env.KERNEL_NAME }}
+        env:
+          patches: "${{ toJSON(matrix.CONFIG.patches) }}"
+        if: ${{ env.ENABLE_KERNELSU == 'true' }}
+        run: |
+          # Define the directory containing the patches
+          PATCHES_DIR="${{ github.workspace }}/patches"
+
+          # Check if the patches directory exists and is not empty
+          if [ -d "$PATCHES_DIR" ] && [ "$(ls -A $PATCHES_DIR)" ]; then
+            echo "🔍 Found patches in $PATCHES_DIR. Applying them now..."
+
+            # Change to the kernel source directory
+            cd ${{ env.KERNEL_SOURCE_DIR }}
+
+            # Apply each patch
+            for patch in $PATCHES_DIR/*.patch; do
+              echo "📝 Applying $patch"
+              patch -p1 < $patch
+
+              # Check if the patch was applied successfully
+              if [ $? -ne 0 ]; then
+                echo "❌ Failed to apply $patch"
+                exit 1
+              fi
+            done
+
+            echo "✅ All patches applied successfully"
+          else
+            echo "⚠️ No patches found in $PATCHES_DIR"
+          fi
+
       - name: 👍 Start building the kernel
         working-directory: ${{ env.KERNEL_NAME }}
         env:
           ARGS: ${{ steps.generate-args.outputs.ARGS }}
         run: |
           echo "🤔 PATH Variable: $PATH"
-          export KBUILD_BUILD_HOST=Github-Action
-          export KBUILD_BUILD_USER=$(echo ${{ github.actor }} | tr A-Z a-z)
+          if [ ! -z ${{ env.KSU_EXPECTED_SIZE }} ] && [ ! -z ${{ env.KSU_EXPECTED_HASH }} ]; then
+            export KSU_EXPECTED_SIZE=${{ env.KSU_EXPECTED_SIZE }}
+            export KSU_EXPECTED_HASH=${{ env.KSU_EXPECTED_HASH }}
+          fi
+
+          export KBUILD_BUILD_HOST=${{ env.BUILD_HOST }}
+          if [ ${{ env.BUILDER }} = "" ]; then
+            export KBUILD_BUILD_USER=$(echo ${{ github.actor }} | tr A-Z a-z)
+          else
+            export KBUILD_BUILD_USER=${{ env.BUILDER }}
+
           make ${{ env.ARGS }} ${{ env.KERNEL_DEFCONFIG_PATH }}
           make ${{ env.ARGS }}
           # tree ${{ env.OUT_DIR }}
+
+      - name: Setting up KernelSU boot image
+        if: env.MK_BOOT == 'true'
+        run: |
+          cd $GITHUB_WORKSPACE/kernel_workspace
+          chmod +x ./tools/magiskboot
+          cd bootimg_tmp
+          mkdir source kernelbuild
+          cd source
+          $GITHUB_WORKSPACE/kernel_workspace/tools/magiskboot unpack ${{env.SOURCE_KERNELSU_BOOTIMG_PATH}}
+          cd ..
+          cp -r ./source ./new
+          if [ ${{ env.KERNEL_IMAGE_NAME }} = Image.gz-dtb ]; then
+            cd $GITHUB_WORKSPACE/kernel_workspace/bootimg_tmp/kernelbuild
+            $GITHUB_WORKSPACE/kernel_workspace/tools/magiskboot split ${{ env.OUT_DIR }}/arch/${{ env.ARCH }}/boot/Image.gz-dtb
+            cp -rf kernel $GITHUB_WORKSPACE/kernel_workspace/bootimg_tmp/new/
+            cp -rf kernel_dtb $GITHUB_WORKSPACE/kernel_workspace/bootimg_tmp/new/
+            cd $GITHUB_WORKSPACE/kernel_workspace/bootimg_tmp/new/
+            $GITHUB_WORKSPACE/kernel_workspace/tools/magiskboot repack ${{env.SOURCE_KERNELSU_BOOTIMG_PATH}} $GITHUB_WORKSPACE/kernel_workspace/bootimg_tmp/boot-kernelsu.img
+          else
+            cd $GITHUB_WORKSPACE/kernel_workspace/bootimg_tmp/new/
+            cp -rf ${{ env.OUT_DIR }}/arch/${{ env.ARCH }}/boot/${{ env.KERNEL_IMAGE_NAME }} ./kernel
+            $GITHUB_WORKSPACE/kernel_workspace/tools/magiskboot repack ${{env.SOURCE_KERNELSU_BOOTIMG_PATH}} $GITHUB_WORKSPACE/kernel_workspace/bootimg_tmp/boot-kernelsu.img
+          fi
+  
+      - name: ⛑️ Pack things for debugging
+        if: ${{ env.DEBUG == 'true' }}
+        run: |
+          cd $GITHUB_WORKSPACE
+          tar czvf debug.tar .
+          xz -k debug.tar
 
       - name: 💛 Upload Image
         uses: actions/upload-artifact@v3
@@ -349,6 +509,7 @@ jobs:
         uses: actions/upload-artifact@v3
         env:
           ARCH: ${{ steps.generate-args.outputs.ARCH }}
+        if: ${{ env.NEED_DTBO == 'true' }}
         with:
           name: ${{ env.KERNEL_NAME }}-${{ env.BUILD_DATE }}-dtbo.img
           path: ${{ env.OUT_DIR }}/arch/${{ env.ARCH }}/boot/dtbo.img
@@ -373,7 +534,7 @@ jobs:
         run: |
           if echo -n '${{ env.PARAMS }}' | jq -e 'has("custom")' > /dev/null; then
             CUSTOM_ANYKERNEL3=$(echo -n '${{ env.PARAMS }}' | jq -r ".custom")
-            ANYKERNEL_REPO=$(echo $CUSTOM_ANYKERNEL3 | jq -r ".repo")
+            ANYKERNEL_REPO=$(echo $CUSTOM_ANYKERNEL3 | jq -r ".link")
             ANYKERNEL_BRANCH=$(echo $CUSTOM_ANYKERNEL3 | jq -r ".branch")
             git clone --recursive --depth=1 -j $(nproc) --branch $ANYKERNEL_BRANCH $ANYKERNEL_REPO AnyKernel3
             echo "🤔 Use custom AnyKernel3 => ($ANYKERNEL_REPO)"
@@ -415,13 +576,39 @@ jobs:
           name: "${{ env.ANYKERNEL3_FILE }}"
           path: AnyKernel3/*
 
-      - name: 🧧 Create GitHub Release => (${{ env.BUILD_DATE }})
+      - name: "💿 Upload boot image => (${{ env.BUILD_DATE }})"
         env:
-          ANYKERNEL3_FILE: "${{ env.WORKSPACE }}/AnyKernel3-${{ env.KERNEL_NAME }}-${{ env.BUILD_DATE }}"
-        continue-on-error: true
-        uses: softprops/action-gh-release@v1
-        if: ${{ env.USE_ANYKERNEL3 == 'true' && env.CONFIRM_RELEASE == 'true' }}
+          BOOTIMG_FILE: "Boot-${{ env.KERNEL_NAME }}-${{ env.BUILD_DATE }}"
+        uses: actions/upload-artifact@v3
+        if: ${{ env.MK_BOOT == 'true' }}
         with:
-          tag_name: v${{ env.BUILD_DATE }}.${{ github.run_number }}
-          files: "${{ env.ANYKERNEL3_FILE }}.zip"
+          name: "${{ env.BOOTIMG_FILE }}"
+          path: kernel_workspace/bootimg_tmp/boot-kernelsu.img
+
+      - name: "⛑️ Upload things for debugging => (${{ env.BUILD_DATE }})"
+        env:
+          DEBUG_FILE: "Debug-${{ env.KERNEL_NAME }}-${{ env.BUILD_DATE }}"
+        uses: actions/upload-artifact@v3
+        if: ${{ env.DEBUG == 'true' }}
+        with:
+          name: "${{ env.DEBUG_FILE }}"
+          path: $GITHUB_WORKSPACE/debug.tar.xz
+
+      - name: 🧧 Create GitHub Release => (${{ env.BUILD_DATE }})
+        continue-on-error: true
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        uses: softprops/action-gh-release@v1
+        if: ${{ env.RELEASE == 'true' }}
+        with:
+          tag_name: Build-${{ env.DEVICE }}-${{ env.BUILD_DATE }}.${{ github.run_number }}
+          files: |
+            ${{ env.OUT_DIR }}/arch/${{ env.ARCH }}/boot/Image
+            ${{ env.OUT_DIR }}/arch/${{ env.ARCH }}/boot/Image.gz
+            ${{ env.OUT_DIR }}/arch/${{ env.ARCH }}/boot/Image.gz-dtb
+            ${{ env.OUT_DIR }}/arch/${{ env.ARCH }}/boot/dtb
+            ${{ env.OUT_DIR }}/arch/${{ env.ARCH }}/boot/dtbo.img
+            AnyKernel3/*
+            kernel_workspace/bootimg_tmp/boot-kernelsu.img
           generate_release_notes: true
+

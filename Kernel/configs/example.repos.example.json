@@ -1,0 +1,82 @@
+{
+    "general":{
+      "name": "",
+      "build-host": "GitHub-Action",
+      "builder-name": "magojohnji",
+      "enableKprobes": true,
+      "enableOverlayFS": true,
+      "disable-lto": false,
+      "disable-cc-werror": false,
+      "release": false,
+      "debug": false
+    },
+
+    "kernelSource": {
+      "link": "",
+      "branch": "",
+      "config": "",
+      "arch": "",
+      "need-dtbo": true
+    },
+
+    "withKernelSU": {
+      "enable": true,
+      "installer": "https://raw.githubusercontent.com/tiann/KernelSU/main/kernel/setup.sh",
+      "tag": "main",
+      "apply-patch": false,
+      "ksu_expected_size": "",
+      "ksu_expected_hash": "",
+      "make_bootimg": true,
+      "bootimg_link": "https://raw.githubusercontent.com/magojohnji/magojohnji/main/boot/boot_PE13_violet.img"
+    },
+
+    "toolchains": [
+      {
+        "clang": true,
+        "source": "",
+        "branch": "master",
+        "version": "r498229b",
+        "url": "https://android.googlesource.com/platform/prebuilts/clang/host/linux-x86/+archive/refs/heads/master/clang-r498229b.tar.gz",
+        "binPath": ["bin"]
+      },
+      {
+        "gcc": true,
+        "source": "",
+        "version": "12.1.0",
+        "release": "r27",
+        "url": "https://android.googlesource.com/platform/prebuilts/gcc/linux-x86/aarch64/aarch64-linux-android-4.9/+archive/refs/tags/android-12.1.0_r27.tar.gz",
+        "binPath": ["bin"]
+      }
+    ],
+
+    "ccache": true,
+
+    "enableLXC": false,
+
+    "params": {
+      "CC": "",
+      "externalCommand": {
+        "CLANG_TRIPLE": "aarch64-linux-gnu-",
+        "CROSS_COMPILE": "aarch64-linux-android-",
+        "CROSS_COMPILE_ARM32": "arm-linux-androideabi-",
+        "LD": "ld.lld",
+        "AR": "llvm-ar",
+        "NM": "llvm-nm",
+        "OBJCOPY": "llvm-objcopy",
+        "OBJDUMP": "llvm-objdump",
+        "READELF": "llvm-readelf",
+        "OBJSIZE": "llvm-size",
+        "STRIP": "llvm-strip",
+        "LDGOLD": "aarch64-linux-gnu-ld.gold",
+        "LLVM_AR": "llvm-ar",
+        "LLVM_DIS": "llvm-dis",
+        "CONFIG_THINLTO": ""
+      }
+    },
+
+    "AnyKernel3": {
+      "enable": true,
+      "link": "",
+      "branch": ""
+    }
+  }
