@@ -1,4 +1,5 @@
-{
+[
+  {
     "general":{
       "name": "violet",
       "build-host": "GitHub-Action",
@@ -58,3 +59,4 @@
       "branch": "dynamic"
     }
   }
+]
