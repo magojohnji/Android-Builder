@@ -97,7 +97,7 @@ jobs:
       AK3_BRANCH: ${{ matrix.CONFIG.AnyKernel3.branch }}
 
       # Set output & ccache directory
-      OUT_DIR: "${{ github.workspace }}/out"
+      OUT_DIR: "${{ github.workspace }}/${{ env.KERNEL_NAME }}/out"
       CCACHE_DIR: "${{ github.workspace }}/ccache"
     steps:
       # Set swap space
@@ -389,7 +389,7 @@ jobs:
         if: ${{ env.ENABLE_KERNELSU == 'true' }}
         run: |
           # Define the directory containing the patches
-          PATCHES_DIR="${{ env.KERNEL_NAME }}"
+          PATCHES_DIR="patches"
 
           # Check if the patches directory exists and is not empty
           if [ -d "$PATCHES_DIR" ] && [ "$(ls -A $PATCHES_DIR)" ]; then
@@ -433,7 +433,7 @@ jobs:
             export KBUILD_BUILD_USER=${{ env.BUILDER }}
           fi
 
-          make ${{ env.ARGS }} ${{ env.KERNEL_DEFCONFIG_PATH }}
+          make O=out ${{ env.KERNEL_DEFCONFIG_PATH }}
           make ${{ env.ARGS }}
           # tree ${{ env.OUT_DIR }}
 
