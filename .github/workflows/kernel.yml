@@ -97,7 +97,7 @@ jobs:
       AK3_BRANCH: ${{ matrix.CONFIG.AnyKernel3.branch }}
 
       # Set output & ccache directory
-      OUT_DIR: "${{ github.workspace }}/${{ env.KERNEL_NAME }}/out"
+      OUT_DIR: "${{ github.workspace }}/${{ matrix.CONFIG.general.name }}/out"
       CCACHE_DIR: "${{ github.workspace }}/ccache"
     steps:
       # Set swap space
