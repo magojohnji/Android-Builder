@@ -312,16 +312,23 @@ jobs:
             rm -rf "./drivers/kernelsu"
           fi
 
-          # Apply KernelSU
-          if [ ${{ env.APPLY_KSU_PATCH }} = true ]; then
-              bash $GITHUB_WORKSPACE/patches/patches.sh
-              if grep -q "CONFIG_KSU" arch/${{ env.ARCH }}/configs/${{ env.KERNEL_DEFCONFIG_PATH }}; then
-                  sed -i 's/# CONFIG_KSU is not set/CONFIG_KSU=y/g' arch/${{ env.ARCH }}/configs/${{ env.KERNEL_DEFCONFIG_PATH }}
-                  sed -i 's/CONFIG_KSU=n/CONFIG_KSU=y/g' arch/${{ env.ARCH }}/configs/${{ env.KERNEL_DEFCONFIG_PATH }}
-              else
-                  echo "CONFIG_KSU=y" >> arch/${{ env.ARCH }}/configs/${{ env.KERNEL_DEFCONFIG_PATH }}
-              fi
+          if [ ${{ env.KERNELSU_TAG }} = '' ]; then
+            curl -LSs "${{ env.KERNELSU_INSTALLER }}" | bash -
+          else
+            curl -LSs "${{ env.KERNELSU_INSTALLER }}" | bash -s ${{ env.KERNELSU_TAG }}
           fi
+
+          if grep -q "CONFIG_KSU" arch/${{ env.ARCH }}/configs/${{ env.KERNEL_DEFCONFIG_PATH }}; then
+            sed -i 's/# CONFIG_KSU is not set/CONFIG_KSU=y/g' arch/${{ env.ARCH }}/configs/${{ env.KERNEL_DEFCONFIG_PATH }}
+            sed -i 's/CONFIG_KSU=n/CONFIG_KSU=y/g' arch/${{ env.ARCH }}/configs/${{ env.KERNEL_DEFCONFIG_PATH }}
+          else
+              echo "CONFIG_KSU=y" >> arch/${{ env.ARCH }}/configs/${{ env.KERNEL_DEFCONFIG_PATH }}
+          fi
+
+          # Apply KernelSU
+          # if [ ${{ env.APPLY_KSU_PATCH }} = true ]; then
+          #     bash $GITHUB_WORKSPACE/patches/patches.sh
+          # fi
 
           if [ ${{ env.ENABLE_KP }} = true -a ${{ env.APPLY_KSU_PATCH }} != true ]; then
               echo "CONFIG_MODULES=y" >> arch/${{ env.ARCH }}/configs/${{ env.KERNEL_DEFCONFIG_PATH }}
@@ -404,6 +411,7 @@ jobs:
             # Apply each patch
             for patch in $PATCHES_DIR/*.patch; do
               echo "📝 Applying $patch"
+              ls
               git apply $patch
 
               # Check if the patch was applied successfully
