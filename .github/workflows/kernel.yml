@@ -406,7 +406,7 @@ jobs:
             echo "🔍 Found patches in $PATCHES_DIR. Applying them now..."
 
             # Change to the kernel source directory
-            cd ${{ env.KERNEL_SOURCE_DIR }}
+            cd $GITHUB_WORKSPACE/kernel_workspace/kernel_dir
 
             # Apply each patch
             for patch in $PATCHES_DIR/*.patch; do
