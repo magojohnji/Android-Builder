@@ -455,14 +455,14 @@ jobs:
           cp -r ./source ./new
           if [ ${{ env.KERNEL_IMAGE_NAME }} = Image.gz-dtb ]; then
             cd $GITHUB_WORKSPACE/kernel_workspace/bootimg_tmp/kernelbuild
-            $GITHUB_WORKSPACE/kernel_workspace/tools/magiskboot split ${{ env.OUT_DIR }}/arch/${{ env.ARCH }}/boot/Image.gz-dtb
+            $GITHUB_WORKSPACE/kernel_workspace/tools/magiskboot split ${{ env.OUT_DIR }}/arch/${{ env.KERNEL_ARCH }}/boot/Image.gz-dtb
             cp -rf kernel $GITHUB_WORKSPACE/kernel_workspace/bootimg_tmp/new/
             cp -rf kernel_dtb $GITHUB_WORKSPACE/kernel_workspace/bootimg_tmp/new/
             cd $GITHUB_WORKSPACE/kernel_workspace/bootimg_tmp/new/
             $GITHUB_WORKSPACE/kernel_workspace/tools/magiskboot repack ${{env.SOURCE_KERNELSU_BOOTIMG_PATH}} $GITHUB_WORKSPACE/kernel_workspace/bootimg_tmp/boot-kernelsu.img
           else
             cd $GITHUB_WORKSPACE/kernel_workspace/bootimg_tmp/new/
-            cp -rf ${{ env.OUT_DIR }}/arch/${{ env.ARCH }}/boot/${{ env.KERNEL_IMAGE_NAME }} ./kernel
+            cp -rf ${{ env.OUT_DIR }}/arch/${{ env.KERNEL_ARCH }}/boot/${{ env.KERNEL_IMAGE_NAME }} ./kernel
             $GITHUB_WORKSPACE/kernel_workspace/tools/magiskboot repack ${{env.SOURCE_KERNELSU_BOOTIMG_PATH}} $GITHUB_WORKSPACE/kernel_workspace/bootimg_tmp/boot-kernelsu.img
           fi
   
