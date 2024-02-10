@@ -162,8 +162,7 @@ jobs:
       - name: 🌟 Clone kernel source => (${{ env.KERNEL_LINK }})
         run: |
           cd $GITHUB_WORKSPACE/kernel_workspace
-          ls
-          cd kernel_dir
+          rm -rf kernel_dir
           if [[ ${{ env.KERNEL_LINK }} =~ git ]]; then
             git clone --recurse-submodules --depth=1 -j $(nproc) --branch ${{ env.KERNEL_BRANCH }} ${{ env.KERNEL_LINK }} kernel_dir
           else
@@ -300,7 +299,6 @@ jobs:
           echo "🤔 $args"
 
       - name: 😋 Setup KernelSU
-        working-directory: ${{ env.KERNEL_NAME }}
         env:
           ARCH: ${{ steps.generate-args.outputs.ARCH }}
         if: ${{ env.ENABLE_KERNELSU == 'true' }}
@@ -348,7 +346,6 @@ jobs:
           fi
   
       - name: 😋 Setup LXC docker
-        working-directory: ${{ env.KERNEL_NAME }}
         env:
           DEFCONFIG: ${{ env.WORKSPACE }}/${{ env.KERNEL_NAME }}/arch/${{ steps.generate-args.outputs.ARCH }}/configs/${{env.KERNEL_DEFCONFIG_PATH}}
           ADD_DEFCONFIG: ${{ env.WORKSPACE }}/Kernel/LXC/LXC_defconfig
@@ -422,7 +419,6 @@ jobs:
           fi
 
       - name: 👍 Start building the kernel
-        working-directory: ${{ env.KERNEL_NAME }}
         env:
           ARGS: ${{ steps.generate-args.outputs.ARGS }}
         run: |
