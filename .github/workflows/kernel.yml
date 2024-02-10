@@ -235,7 +235,7 @@ jobs:
             fi
 
             jq -r ".binaryEnv[] | tostring" <<< "$toolchain" | while read -r subPath; do
-              echo "$GITHUB_WORKSPACE/kernel_workspace/kernel_dir/$toolchain_name/$subPath/" >> $GITHUB_PATH
+              echo "$GITHUB_WORKSPACE/kernel_workspace/kernel_dir/toolchains/$toolchain_name/$subPath/" >> $GITHUB_PATH
             done
           done
 
@@ -424,7 +424,7 @@ jobs:
         run: |
           cd $GITHUB_WORKSPACE/kernel_workspace/kernel_dir
           echo "🤔 PATH Variable: $PATH"
-          ls $GITHUB_WORKSPACE/kernel_workspace/kernel_dir/clang/bin/
+          ls $GITHUB_WORKSPACE/kernel_workspace/kernel_dir/toolchains/clang/bin/
           if [ ! -z ${{ env.KSU_EXPECTED_SIZE }} ] && [ ! -z ${{ env.KSU_EXPECTED_HASH }} ]; then
             export KSU_EXPECTED_SIZE=${{ env.KSU_EXPECTED_SIZE }}
             export KSU_EXPECTED_HASH=${{ env.KSU_EXPECTED_HASH }}
