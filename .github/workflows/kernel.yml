@@ -235,7 +235,7 @@ jobs:
             fi
 
             jq -r ".binaryEnv[] | tostring" <<< "$toolchain" | while read -r subPath; do
-              echo "$toolchain_name/$subPath" >> $GITHUB_PATH
+              echo "$GITHUB_WORKSPACE/kernel_workspace/kernel_dir/$toolchain_name/$subPath" >> $GITHUB_PATH
             done
           done
 
