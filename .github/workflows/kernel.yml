@@ -97,7 +97,7 @@ jobs:
       AK3_BRANCH: ${{ matrix.CONFIG.AnyKernel3.branch }}
 
       # Set output & ccache directory
-      OUT_DIR: "${{ github.workspace }}/out"
+      OUT_DIR: "$GITHUB_WORKSPACE/kernel_workspace/kernel_dir/out"
       CCACHE_DIR: "${{ github.workspace }}/ccache"
     steps:
       # Set swap space
@@ -161,17 +161,19 @@ jobs:
 
       - name: 🌟 Clone kernel source => (${{ env.KERNEL_LINK }})
         run: |
+          cd $GITHUB_WORKSPACE/kernel_workspace
           if [[ ${{ env.KERNEL_LINK }} =~ git ]]; then
-            git clone --recursive --depth=1 -j $(nproc) --branch ${{ env.KERNEL_BRANCH }} ${{ env.KERNEL_LINK }} ${{ env.KERNEL_NAME }}
+            git clone --recurse-submodules --depth=1 -j $(nproc) --branch ${{ env.KERNEL_BRANCH }} ${{ env.KERNEL_LINK }} kernel_dir
           else
-            mkdir ${{ env.KERNEL_NAME }}
-            cd ${{ env.KERNEL_NAME }}
+            mkdir kernel_dir
+            cd kernel_dir
             aria2c ${{ env.KERNEL_LINK }}
             kernel_file_name=$(ls)
             aria2c https://github.com/magojohnji/Android-Builder/raw/main/.Scripts/Extract.sh
             chmod +x ./extract.sh
             ./extract.sh $kernel_file_name
             rm -rf $kernel_file_name
+            rm -rf ././extract.sh
           fi
           # tree ${{ env.KERNEL_NAME }}
 
@@ -179,6 +181,9 @@ jobs:
         env:
           toolchains: "${{ toJSON(matrix.CONFIG.toolchains) }}"
         run: |
+          cd $GITHUB_WORKSPACE/kernel_workspace
+          mkdir toolchains
+          cd toolchains
           toolchains_num="$(echo $toolchains | jq 'length')"
           echo "🤔 There is $toolchains_num defined toolchains."
 
@@ -233,7 +238,7 @@ jobs:
             done
           done
 
-      - name: Download magiskboot for linux
+      - name: 😉 Download magiskboot for linux
         if: env.MK_BOOT == 'true'
         run: |
           cd $GITHUB_WORKSPACE/kernel_workspace
@@ -244,7 +249,7 @@ jobs:
           cd ..
           rm -rf magiskboot
 
-      - name: Download source boot image file for KernelSU 
+      - name: 😁 Download source boot image
         if: env.MK_BOOT == 'true'
         run: |
           cd $GITHUB_WORKSPACE/kernel_workspace
@@ -298,6 +303,7 @@ jobs:
           ARCH: ${{ steps.generate-args.outputs.ARCH }}
         if: ${{ env.ENABLE_KERNELSU == 'true' }}
         run: |
+          cd $GITHUB_WORKSPACE/kernel_workspace/kernel_dir
           # Delete old KernelSU
           if [ -d "./KernelSU" ]; then
             rm -rf "./KernelSU"
@@ -346,6 +352,7 @@ jobs:
           ADD_DEFCONFIG: ${{ env.WORKSPACE }}/Kernel/LXC/LXC_defconfig
         if: ${{ env.ENABLE_LXC == 'true' }}
         run: |
+          cd $GITHUB_WORKSPACE/kernel_workspace/kernel_dir
           # Add configuration
           for config in $(cat ${{ env.ADD_DEFCONFIG }})
           do
@@ -383,13 +390,10 @@ jobs:
           fi
 
       - name: 😋 Apply kernel patches
-        working-directory: ${{ env.KERNEL_NAME }}
-        env:
-          patches: "${{ toJSON(matrix.CONFIG.patches) }}"
         if: ${{ env.ENABLE_KERNELSU == 'true' }}
         run: |
           # Define the directory containing the patches
-          PATCHES_DIR="${{ env.KERNEL_NAME }}"
+          PATCHES_DIR="$GITHUB_WORKSPACE/kernel_workspace/kernel_dir/patches"
 
           # Check if the patches directory exists and is not empty
           if [ -d "$PATCHES_DIR" ] && [ "$(ls -A $PATCHES_DIR)" ]; then
@@ -420,6 +424,7 @@ jobs:
         env:
           ARGS: ${{ steps.generate-args.outputs.ARGS }}
         run: |
+          cd $GITHUB_WORKSPACE/kernel_workspace/kernel_dir
           echo "🤔 PATH Variable: $PATH"
           if [ ! -z ${{ env.KSU_EXPECTED_SIZE }} ] && [ ! -z ${{ env.KSU_EXPECTED_HASH }} ]; then
             export KSU_EXPECTED_SIZE=${{ env.KSU_EXPECTED_SIZE }}
@@ -583,7 +588,7 @@ jobs:
         if: ${{ env.MK_BOOT == 'true' }}
         with:
           name: "${{ env.BOOTIMG_FILE }}"
-          path: kernel_workspace/bootimg_tmp/boot-kernelsu.img
+          path: $GITHUB_WORKSPACE/kernel_workspace/bootimg_tmp/boot-kernelsu.img
 
       - name: "⛑️ Upload things for debugging => (${{ env.BUILD_DATE }})"
         env:
@@ -609,6 +614,6 @@ jobs:
             ${{ env.OUT_DIR }}/arch/${{ env.ARCH }}/boot/dtb
             ${{ env.OUT_DIR }}/arch/${{ env.ARCH }}/boot/dtbo.img
             AnyKernel3/*
-            kernel_workspace/bootimg_tmp/boot-kernelsu.img
+            $GITHUB_WORKSPACE/kernel_workspace/bootimg_tmp/boot-kernelsu.img
           generate_release_notes: true
 
