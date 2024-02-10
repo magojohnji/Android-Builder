@@ -298,6 +298,39 @@ jobs:
 
           echo "🤔 $args"
 
+      
+      - name: 😋 Apply kernel patches
+        if: ${{ env.ENABLE_KERNELSU == 'true' }}
+        run: |
+          # Define the directory containing the patches
+          PATCHES_DIR="$GITHUB_WORKSPACE/kernel_workspace/kernel_dir"
+          ls
+          # Check if the patches directory exists and is not empty
+          if [ -d "$PATCHES_DIR" ] && [ "$(ls -A $PATCHES_DIR)" ]; then
+            echo "🔍 Found patches in $PATCHES_DIR. Applying them now..."
+
+            # Change to the kernel source directory
+            cd $GITHUB_WORKSPACE/kernel_workspace/kernel_dir
+            git apply KernelSU-hook.patch
+            git apply dsp-hook.patch
+            # # Apply each patch
+            # for patch in $PATCHES_DIR/*.patch; do
+            #   echo "📝 Applying $patch"
+            #   # git apply $patch
+              
+
+            #   # Check if the patch was applied successfully
+            #   if [ $? -ne 0 ]; then
+            #     echo "❌ Failed to apply $patch"
+            #     exit 1
+            #   fi
+            # done
+
+            echo "✅ All patches applied successfully"
+          else
+            echo "⚠️ No patches found in $PATCHES_DIR"
+          fi
+
       - name: 😋 Setup KernelSU
         env:
           ARCH: ${{ steps.generate-args.outputs.ARCH }}
@@ -393,37 +426,6 @@ jobs:
           if [ -f android-kernel/net/netfilter/xt_qtaguid.c ]; then
             git am -s < ${{ env.WORKSPACE }}/LXC/Patches/xt_qtaguid.patch
             echo "🎖️ Apply xt_qtaguid.patch"
-          fi
-
-      - name: 😋 Apply kernel patches
-        if: ${{ env.ENABLE_KERNELSU == 'true' }}
-        run: |
-          # Define the directory containing the patches
-          PATCHES_DIR="$GITHUB_WORKSPACE/kernel_workspace/kernel_dir"
-
-          # Check if the patches directory exists and is not empty
-          if [ -d "$PATCHES_DIR" ] && [ "$(ls -A $PATCHES_DIR)" ]; then
-            echo "🔍 Found patches in $PATCHES_DIR. Applying them now..."
-
-            # Change to the kernel source directory
-            cd $GITHUB_WORKSPACE/kernel_workspace/kernel_dir
-
-            # Apply each patch
-            for patch in $PATCHES_DIR/*.patch; do
-              echo "📝 Applying $patch"
-              # git apply $patch
-              git apply KernelSU-hook.patch
-
-              # Check if the patch was applied successfully
-              if [ $? -ne 0 ]; then
-                echo "❌ Failed to apply $patch"
-                exit 1
-              fi
-            done
-
-            echo "✅ All patches applied successfully"
-          else
-            echo "⚠️ No patches found in $PATCHES_DIR"
           fi
 
       - name: 👍 Start building the kernel
