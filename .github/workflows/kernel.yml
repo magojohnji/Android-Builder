@@ -182,7 +182,7 @@ jobs:
         env:
           toolchains: "${{ toJSON(matrix.CONFIG.toolchains) }}"
         run: |
-          cd $GITHUB_WORKSPACE/kernel_workspace
+          cd $GITHUB_WORKSPACE/kernel_workspace/kernel_dir
           mkdir toolchains
           cd toolchains
           toolchains_num="$(echo $toolchains | jq 'length')"
@@ -235,7 +235,7 @@ jobs:
             fi
 
             jq -r ".binaryEnv[] | tostring" <<< "$toolchain" | while read -r subPath; do
-              echo "${{ env.WORKSPACE }}/$toolchain_name/$subPath" >> $GITHUB_PATH
+              echo "$toolchain_name/$subPath" >> $GITHUB_PATH
             done
           done
 
