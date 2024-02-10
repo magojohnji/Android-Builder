@@ -128,7 +128,26 @@ jobs:
       # Set device name.
       - name: ⏰ Set device name
         run: echo "DEVICE=$(echo ${{ env.KERNEL_DEFCONFIG_PATH }} | sed 's!vendor/!!;s/_defconfig//;s/_user//;s/-perf//')" >> $GITHUB_ENV
-      
+
+      - name: 🌟 Clone kernel source => (${{ env.KERNEL_LINK }})
+        run: |
+          cd $GITHUB_WORKSPACE/kernel_workspace
+          rm -rf kernel_dir
+          if [[ ${{ env.KERNEL_LINK }} =~ git ]]; then
+            git clone --recurse-submodules --depth=1 -j $(nproc) --branch ${{ env.KERNEL_BRANCH }} ${{ env.KERNEL_LINK }} kernel_dir
+          else
+            mkdir kernel_dir
+            cd kernel_dir
+            aria2c ${{ env.KERNEL_LINK }}
+            kernel_file_name=$(ls)
+            aria2c https://github.com/magojohnji/Android-Builder/raw/main/.Scripts/Extract.sh
+            chmod +x ./extract.sh
+            ./extract.sh $kernel_file_name
+            rm -rf $kernel_file_name
+            rm -rf ././extract.sh
+          fi
+          tree kernel_dir
+
       # Initialize ccache
       - name: 🚄 Setup ccache
         if: ${{ env.ENABLE_CCACHE == 'true' }}
@@ -158,25 +177,6 @@ jobs:
             cache-${{ env.KERNEL_NAME }}-${{env.HASH}}-${{ env.BUILD_DATE }}
             cache-${{ env.KERNEL_NAME }}-${{env.HASH}}-
             cache-${{ env.KERNEL_NAME }}-
-
-      - name: 🌟 Clone kernel source => (${{ env.KERNEL_LINK }})
-        run: |
-          cd $GITHUB_WORKSPACE/kernel_workspace
-          rm -rf kernel_dir
-          if [[ ${{ env.KERNEL_LINK }} =~ git ]]; then
-            git clone --recurse-submodules --depth=1 -j $(nproc) --branch ${{ env.KERNEL_BRANCH }} ${{ env.KERNEL_LINK }} kernel_dir
-          else
-            mkdir kernel_dir
-            cd kernel_dir
-            aria2c ${{ env.KERNEL_LINK }}
-            kernel_file_name=$(ls)
-            aria2c https://github.com/magojohnji/Android-Builder/raw/main/.Scripts/Extract.sh
-            chmod +x ./extract.sh
-            ./extract.sh $kernel_file_name
-            rm -rf $kernel_file_name
-            rm -rf ././extract.sh
-          fi
-          # tree ${{ env.KERNEL_NAME }}
 
       - name: 💫 Get toolchains
         env:
@@ -271,7 +271,7 @@ jobs:
           ARCH=${{ env.KERNEL_ARCH }}
           CC=$(echo $PARAMS | jq -r ".CC")
 
-          args="-j${{ env.THREAD }} O=${{ env.OUT_DIR }} ARCH=$ARCH"
+          args="-j${{ env.THREAD }} O=out ARCH=$ARCH"
           if [ -n "$CC" ]; then
 
             if [[ "$CC" == *"/"* ]]; then
@@ -439,7 +439,8 @@ jobs:
 
           make O=out ${{ env.KERNEL_DEFCONFIG_PATH }}
           make ${{ env.ARGS }}
-          # tree ${{ env.OUT_DIR }}
+          
+          tree ${{ env.OUT_DIR }}
 
       - name: Setting up KernelSU boot image
         if: env.MK_BOOT == 'true'
