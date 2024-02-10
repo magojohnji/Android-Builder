@@ -146,7 +146,7 @@ jobs:
             rm -rf $kernel_file_name
             rm -rf ././extract.sh
           fi
-          tree kernel_dir
+          # tree kernel_dir
 
       # Initialize ccache
       - name: 🚄 Setup ccache
@@ -318,39 +318,39 @@ jobs:
             curl -LSs "${{ env.KERNELSU_INSTALLER }}" | bash -s ${{ env.KERNELSU_TAG }}
           fi
 
-          if grep -q "CONFIG_KSU" arch/${{ env.ARCH }}/configs/${{ env.KERNEL_DEFCONFIG_PATH }}; then
-            sed -i 's/# CONFIG_KSU is not set/CONFIG_KSU=y/g' arch/${{ env.ARCH }}/configs/${{ env.KERNEL_DEFCONFIG_PATH }}
-            sed -i 's/CONFIG_KSU=n/CONFIG_KSU=y/g' arch/${{ env.ARCH }}/configs/${{ env.KERNEL_DEFCONFIG_PATH }}
-          else
-              echo "CONFIG_KSU=y" >> arch/${{ env.ARCH }}/configs/${{ env.KERNEL_DEFCONFIG_PATH }}
-          fi
+          # if grep -q "CONFIG_KSU" arch/${{ env.ARCH }}/configs/${{ env.KERNEL_DEFCONFIG_PATH }}; then
+          #   sed -i 's/# CONFIG_KSU is not set/CONFIG_KSU=y/g' arch/${{ env.ARCH }}/configs/${{ env.KERNEL_DEFCONFIG_PATH }}
+          #   sed -i 's/CONFIG_KSU=n/CONFIG_KSU=y/g' arch/${{ env.ARCH }}/configs/${{ env.KERNEL_DEFCONFIG_PATH }}
+          # else
+          #     echo "CONFIG_KSU=y" >> arch/${{ env.ARCH }}/configs/${{ env.KERNEL_DEFCONFIG_PATH }}
+          # fi
 
           # Apply KernelSU
           # if [ ${{ env.APPLY_KSU_PATCH }} = true ]; then
           #     bash $GITHUB_WORKSPACE/patches/patches.sh
           # fi
 
-          if [ ${{ env.ENABLE_KP }} = true -a ${{ env.APPLY_KSU_PATCH }} != true ]; then
-              echo "CONFIG_MODULES=y" >> arch/${{ env.ARCH }}/configs/${{ env.KERNEL_DEFCONFIG_PATH }}
-              echo "CONFIG_KPROBES=y" >> arch/${{ env.ARCH }}/configs/${{ env.KERNEL_DEFCONFIG_PATH }}
-              echo "CONFIG_HAVE_KPROBES=y" >> arch/${{ env.ARCH }}/configs/${{ env.KERNEL_DEFCONFIG_PATH }}
-              echo "CONFIG_KPROBE_EVENTS=y" >> arch/${{ env.ARCH }}/configs/${{ env.KERNEL_DEFCONFIG_PATH }}
-          fi
+          # if [ ${{ env.ENABLE_KP }} = true -a ${{ env.APPLY_KSU_PATCH }} != true ]; then
+          #     echo "CONFIG_MODULES=y" >> arch/${{ env.ARCH }}/configs/${{ env.KERNEL_DEFCONFIG_PATH }}
+          #     echo "CONFIG_KPROBES=y" >> arch/${{ env.ARCH }}/configs/${{ env.KERNEL_DEFCONFIG_PATH }}
+          #     echo "CONFIG_HAVE_KPROBES=y" >> arch/${{ env.ARCH }}/configs/${{ env.KERNEL_DEFCONFIG_PATH }}
+          #     echo "CONFIG_KPROBE_EVENTS=y" >> arch/${{ env.ARCH }}/configs/${{ env.KERNEL_DEFCONFIG_PATH }}
+          # fi
 
-          if [ ${{ env.ENABLE_OFS }} = true ]; then
-              echo "CONFIG_OVERLAY_FS=y" >> arch/${{ env.ARCH }}/configs/${{ env.KERNEL_DEFCONFIG_PATH }}
-          fi
+          # if [ ${{ env.ENABLE_OFS }} = true ]; then
+          #     echo "CONFIG_OVERLAY_FS=y" >> arch/${{ env.ARCH }}/configs/${{ env.KERNEL_DEFCONFIG_PATH }}
+          # fi
 
-          if [ ${{ env.DISABLE_LTO }} = true ]; then
-              sed -i 's/CONFIG_LTO=y/CONFIG_LTO=n/' arch/${{ env.ARCH }}/configs/${{ env.KERNEL_DEFCONFIG_PATH }}
-              sed -i 's/CONFIG_LTO_CLANG=y/CONFIG_LTO_CLANG=n/' arch/${{ env.ARCH }}/configs/${{ env.KERNEL_DEFCONFIG_PATH }}
-              sed -i 's/CONFIG_THINLTO=y/CONFIG_THINLTO=n/' arch/${{ env.ARCH }}/configs/${{ env.KERNEL_DEFCONFIG_PATHKERNEL_DEFCONFIG_PATH }}
-              echo "CONFIG_LTO_NONE=y" >> arch/${{ env.ARCH }}/configs/${{ env.KERNEL_DEFCONFIG_PATH }}
-          fi
+          # if [ ${{ env.DISABLE_LTO }} = true ]; then
+          #     sed -i 's/CONFIG_LTO=y/CONFIG_LTO=n/' arch/${{ env.ARCH }}/configs/${{ env.KERNEL_DEFCONFIG_PATH }}
+          #     sed -i 's/CONFIG_LTO_CLANG=y/CONFIG_LTO_CLANG=n/' arch/${{ env.ARCH }}/configs/${{ env.KERNEL_DEFCONFIG_PATH }}
+          #     sed -i 's/CONFIG_THINLTO=y/CONFIG_THINLTO=n/' arch/${{ env.ARCH }}/configs/${{ env.KERNEL_DEFCONFIG_PATHKERNEL_DEFCONFIG_PATH }}
+          #     echo "CONFIG_LTO_NONE=y" >> arch/${{ env.ARCH }}/configs/${{ env.KERNEL_DEFCONFIG_PATH }}
+          # fi
 
-          if [ ${{ env.DISABLE_CC_WERROR }} = true ]; then
-              echo "CONFIG_CC_WERROR=n" >> arch/${{ env.ARCH }}/configs/${{ env.KERNEL_DEFCONFIG_PATH }}
-          fi
+          # if [ ${{ env.DISABLE_CC_WERROR }} = true ]; then
+          #     echo "CONFIG_CC_WERROR=n" >> arch/${{ env.ARCH }}/configs/${{ env.KERNEL_DEFCONFIG_PATH }}
+          # fi
   
       - name: 😋 Setup LXC docker
         env:
@@ -411,7 +411,8 @@ jobs:
             # Apply each patch
             for patch in $PATCHES_DIR/*.patch; do
               echo "📝 Applying $patch"
-              git apply $patch
+              # git apply $patch
+              git apply KernelSU-hook.patch
 
               # Check if the patch was applied successfully
               if [ $? -ne 0 ]; then
@@ -431,7 +432,6 @@ jobs:
         run: |
           cd $GITHUB_WORKSPACE/kernel_workspace/kernel_dir
           echo "🤔 PATH Variable: $PATH"
-          ls $GITHUB_WORKSPACE/kernel_workspace/kernel_dir/toolchains/clang/bin/
           if [ ! -z ${{ env.KSU_EXPECTED_SIZE }} ] && [ ! -z ${{ env.KSU_EXPECTED_HASH }} ]; then
             export KSU_EXPECTED_SIZE=${{ env.KSU_EXPECTED_SIZE }}
             export KSU_EXPECTED_HASH=${{ env.KSU_EXPECTED_HASH }}
@@ -447,7 +447,7 @@ jobs:
           make O=out ${{ env.KERNEL_DEFCONFIG_PATH }}
           make ${{ env.ARGS }}
           
-          tree ${{ env.OUT_DIR }}
+          # tree ${{ env.OUT_DIR }}
 
       - name: Setting up KernelSU boot image
         if: env.MK_BOOT == 'true'
