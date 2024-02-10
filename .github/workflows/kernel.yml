@@ -162,6 +162,8 @@ jobs:
       - name: 🌟 Clone kernel source => (${{ env.KERNEL_LINK }})
         run: |
           cd $GITHUB_WORKSPACE/kernel_workspace
+          ls
+          cd kernel_dir
           if [[ ${{ env.KERNEL_LINK }} =~ git ]]; then
             git clone --recurse-submodules --depth=1 -j $(nproc) --branch ${{ env.KERNEL_BRANCH }} ${{ env.KERNEL_LINK }} kernel_dir
           else
