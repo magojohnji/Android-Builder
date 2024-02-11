@@ -28,7 +28,7 @@
       "ksu_expected_size": "",
       "ksu_expected_hash": "",
       "make_bootimg": true,
-      "bootimg_link": "https://raw.githubusercontent.com/magojohnji/magojohnji/main/boot/boot_PE13_violet.img"
+      "bootimg_link": "https://raw.githubusercontent.com/magojohnji/magojohnji/main/boot/boot_evox_violet.img"
     },
 
     "toolchains": [
