@@ -18,6 +18,7 @@
       "branch": "14",
       "defconfig": "vendor/violet-perf_defconfig",
       "arch": "arm64",
+      "image": "Image.gz-dtb",
       "need-dtbo": false
     },
 
@@ -57,8 +58,8 @@
 
     "AnyKernel3": {
       "enable": true,
-      "link": "https://github.com/rezaadi0105/AnyKernel3",
-      "branch": "dynamic"
+      "link": "https://github.com/rezaadi0105/AnyKernel3.git",
+      "branch": "single"
     }
   }
 ]

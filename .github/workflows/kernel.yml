@@ -74,6 +74,7 @@ jobs:
       KERNEL_BRANCH: ${{ matrix.CONFIG.kernelSource.branch }}
       KERNEL_DEFCONFIG_PATH: ${{ matrix.CONFIG.kernelSource.defconfig }}
       KERNEL_ARCH: ${{ matrix.CONFIG.kernelSource.arch }}
+      KERNEL_IMAGE: ${{ matrix.CONFIG.kernelSource.image }}
       NEED_DTBO: ${{ matrix.CONFIG.kernelSource.need-dtbo }}
 
       # KernelSU configuration
@@ -542,7 +543,7 @@ jobs:
           $GITHUB_WORKSPACE/kernel_workspace/tools/magiskboot unpack ${{env.SOURCE_KERNELSU_BOOTIMG_PATH}}
           cd ..
           cp -r ./source ./new
-          if [ ${{ env.KERNEL_IMAGE_NAME }} = Image.gz-dtb ]; then
+          if [ ${{ env.KERNEL_IMAGE }} = Image.gz-dtb ]; then
             cd $GITHUB_WORKSPACE/kernel_workspace/bootimg_tmp/kernelbuild
             $GITHUB_WORKSPACE/kernel_workspace/tools/magiskboot split ${{ env.OUT_DIR }}/arch/${{ env.KERNEL_ARCH }}/boot/Image.gz-dtb
             cp -rf kernel $GITHUB_WORKSPACE/kernel_workspace/bootimg_tmp/new/
@@ -551,10 +552,10 @@ jobs:
             $GITHUB_WORKSPACE/kernel_workspace/tools/magiskboot repack ${{env.SOURCE_KERNELSU_BOOTIMG_PATH}} $GITHUB_WORKSPACE/kernel_workspace/bootimg_tmp/boot-kernelsu.img
           else
             cd $GITHUB_WORKSPACE/kernel_workspace/bootimg_tmp/new/
-            cp -rf ${{ env.OUT_DIR }}/arch/${{ env.KERNEL_ARCH }}/boot/${{ env.KERNEL_IMAGE_NAME }} ./kernel
+            cp -rf ${{ env.OUT_DIR }}/arch/${{ env.KERNEL_ARCH }}/boot/${{ env.KERNEL_IMAGE }} ./kernel
             $GITHUB_WORKSPACE/kernel_workspace/tools/magiskboot repack ${{env.SOURCE_KERNELSU_BOOTIMG_PATH}} $GITHUB_WORKSPACE/kernel_workspace/bootimg_tmp/boot-kernelsu.img
           fi
-  
+
       - name: ⛑️ Pack things for debugging
         if: ${{ env.DEBUG == 'true' }}
         run: |
