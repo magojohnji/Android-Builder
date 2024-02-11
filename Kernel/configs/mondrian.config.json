@@ -14,14 +14,14 @@
   
       "kernel": {
         "basic": {
-          "link": "https://github.com/magojohnji/Realking_kernel_sm8250.git",
-          "branch": "munch",
-          "defconfig": "munch_defconfig",
+          "link": "https://github.com/LowTension/android_kernel_xiaomi_sm8475",
+          "branch": "staging",
+          "defconfig": "mondrian_defconfig",
           "arch": "arm64",
           "image": "Image.gz",
           "need-dtbo": true
         },
-
+  
         "patches": {
 
         }
@@ -54,10 +54,10 @@
       "params": {
         "CC": "clang",
         "externalCommands": {
+          "CXX": "clang++",
           "CROSS_COMPILE": "aarch64-linux-gnu-",
-          "NM": "llvm-nm",
-          "OBJDUMP": "llvm-objdump",
-          "STRIP": "llvm-strip"
+          "CROSS_COMPILE_ARM32": "arm-linux-gnueabi-",
+          "LD": "ld.lld"
         }
       },
   

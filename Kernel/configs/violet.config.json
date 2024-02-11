@@ -32,7 +32,7 @@
     "withKernelSU": {
       "enable": true,
       "installer": "https://github.com/magojohnji/KernelSU/raw/main/kernel/setup.sh",
-      "tag": "main",
+      "tag": "",
       "apply-patch": true,
       "ksu_expected_size": "",
       "ksu_expected_hash": "",
