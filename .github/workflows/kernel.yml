@@ -160,7 +160,7 @@ jobs:
           patches: "${{ toJSON(matrix.CONFIG.kernel.patches) }}"
         if: ${{ toJSON(matrix.CONFIG.kernel.patches) != '{}' }}
         run: |
-          cd GITHUB_WORKSPACE/kernel_workspace/kernel_dir
+          cd $GITHUB_WORKSPACE/kernel_workspace/kernel_dir
 
           patches_num=$(echo "${patches}" | jq 'length')
           echo "🤔 There is $patches_num defined toolchains."

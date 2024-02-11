@@ -31,7 +31,7 @@
 
     "withKernelSU": {
       "enable": true,
-      "installer": "https://raw.githubusercontent.com/tiann/KernelSU/main/kernel/setup.sh",
+      "installer": "https://github.com/magojohnji/KernelSU/raw/main/kernel/setup.sh",
       "tag": "main",
       "apply-patch": true,
       "ksu_expected_size": "",
