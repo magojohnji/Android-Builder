@@ -207,7 +207,10 @@ jobs:
 
           # Generate configuration's hash
           echo $(echo -n '${{ toJSON(matrix.config) }}' | openssl dgst -sha1 | awk '{print $2}')
-          echo "HASH=$(echo -n '${{ toJSON(matrix.config) }}' | openssl dgst -sha1 | awk '{print $2}')" >> $GITHUB_OUTPUT
+          HASH_FULL=$(echo -n '${{ toJSON(matrix.config) }}' | openssl dgst -sha1 | awk '{print $2}')
+          echo ${HASH_FULL:0:8}
+          HASH=${HASH_FULL:0:8}
+          echo "HASH=${HASH_FULL:0:8}" >> $GITHUB_OUTPUT
 
       - name: 🚅 Cache ccache & output
         env:
