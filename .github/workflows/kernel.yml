@@ -559,7 +559,7 @@ jobs:
       - name: ⛑️ Pack things for debugging
         if: ${{ env.DEBUG == 'true' }} || ${{ inputs.debug == 'true' }}
         run: |
-          cd $GITHUB_WORKSPACE
+          cd $GITHUB_WORKSPACE/kernel_workspace
           tar czvf debug.tar .
           xz -k debug.tar
 
@@ -628,7 +628,7 @@ jobs:
         if: ${{ env.DEBUG == 'true' }} || ${{ inputs.debug == 'true' }}
         with:
           name: "${{ env.DEBUG_FILE }}"
-          path: $GITHUB_WORKSPACE/debug.tar.xz
+          path: $GITHUB_WORKSPACE/kernel_workspace/debug.tar.xz
 
       - name: 🧧 Create GitHub Release => (${{ env.BUILD_DATE }})
         continue-on-error: true
