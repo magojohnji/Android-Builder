@@ -63,12 +63,12 @@ jobs:
       REMOVE_UNUSED_PACKAGES: ${{ matrix.CONFIG.general.remove-unused-packages }}
 
       # Kernel source configuration
-      KERNEL_LINK: ${{ matrix.CONFIG.kernelSource.link }}
-      KERNEL_BRANCH: ${{ matrix.CONFIG.kernelSource.branch }}
-      KERNEL_DEFCONFIG_PATH: ${{ matrix.CONFIG.kernelSource.defconfig }}
-      KERNEL_ARCH: ${{ matrix.CONFIG.kernelSource.arch }}
-      KERNEL_IMAGE: ${{ matrix.CONFIG.kernelSource.image }}
-      NEED_DTBO: ${{ matrix.CONFIG.kernelSource.need-dtbo }}
+      KERNEL_LINK: ${{ matrix.CONFIG.kernelSource.basic.link }}
+      KERNEL_BRANCH: ${{ matrix.CONFIG.kernelSource.basic.branch }}
+      KERNEL_DEFCONFIG_PATH: ${{ matrix.CONFIG.kernelSource.basic.defconfig }}
+      KERNEL_ARCH: ${{ matrix.CONFIG.kernelSource.basic.arch }}
+      KERNEL_IMAGE: ${{ matrix.CONFIG.kernelSource.basic.image }}
+      NEED_DTBO: ${{ matrix.CONFIG.kernelSource.basic.need-dtbo }}
 
       # KernelSU configuration
       ENABLE_KERNELSU: ${{ matrix.CONFIG.withKernelSU.enable }}
