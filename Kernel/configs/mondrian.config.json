@@ -16,7 +16,7 @@
         "basic": {
           "link": "https://github.com/magojohnji/android_kernel_xiaomi_sm8475.git",
           "branch": "staging",
-          "defconfig": "mondrian_defconfig",
+          "defconfig": "vendor/mondrian_defconfig",
           "arch": "arm64",
           "image": "Image.gz",
           "need-dtbo": true

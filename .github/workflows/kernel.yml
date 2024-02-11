@@ -364,13 +364,7 @@ jobs:
         if: ${{ env.APPLY_KSU_PATCH == 'true' }}
         run: |
             cd $GITHUB_WORKSPACE/kernel_workspace/kernel_dir
-            git apply $GITHUB_WORKSPACE/Patches/KernelSU-hook.patch
-
-            # Check if the patch was applied successfully
-            if [ $? -ne 0 ]; then
-              echo "❌ Failed to apply KernelSU-hook.patch"
-              exit 1
-            fi
+            git apply KernelSU-hook.patch
             echo "✅ KernelSU-hook.patch applied successfully"
 
       - name: 😋 Setup LXC docker
