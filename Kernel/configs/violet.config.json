@@ -19,7 +19,7 @@
       "defconfig": "vendor/violet-perf_defconfig",
       "arch": "arm64",
       "image": "Image.gz-dtb",
-      "need-dtbo": false
+      "need-dtbo": true
     },
 
     "withKernelSU": {
