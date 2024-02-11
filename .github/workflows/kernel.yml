@@ -1,4 +1,4 @@
-name: Build kernels
+name: Compile kernels
 
 on:
   push:
@@ -42,8 +42,8 @@ jobs:
         run: echo "BUILDDATE=$(date +'%Y%m%d')" >> $GITHUB_OUTPUT
 
 
-  Build-Kernel:
-    name: "🐎 Build kernel"
+  Compile-Kernel:
+    name: "🐎 Compile kernel"
     runs-on: ubuntu-latest
     needs:
       - Read-configuration
@@ -666,4 +666,18 @@ jobs:
             AnyKernel3/*
             $GITHUB_WORKSPACE/kernel_workspace/bootimg_tmp/boot-kernelsu.img
           generate_release_notes: true
+      
+      - name: Add job summary
+        run: |
+          echo '### RESULTS 🚀' >> $GITHUB_STEP_SUMMARY
+          echo '| :Step | Time duration | Result | Commit Hash |' >> $GITHUB_STEP_SUMMARY
+          echo '| ---- | ---- | ---- | ---- |' >> $GITHUB_STEP_SUMMARY
+          echo '| :Get kernel source |  |  |  |' >> $GITHUB_STEP_SUMMARY
+          echo '| :Get toolchains |  |  |  |' >> $GITHUB_STEP_SUMMARY
+          echo '| :Compile the kernel |  |  |  |' >> $GITHUB_STEP_SUMMARY
 
+          echo '- Kernel builder' >> $GITHUB_STEP_SUMMARY
+          echo '- Build host' >> $GITHUB_STEP_SUMMARY
+          if [ ${{ env.ENABLE_KERNELSU }} = 'true' ]; then
+            echo '- KernelSU ' >> $GITHUB_STEP_SUMMARY
+          fi
