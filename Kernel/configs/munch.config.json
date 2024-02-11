@@ -16,17 +16,22 @@
         "basic": {
           "link": "https://github.com/magojohnji/Realking_kernel_sm8250.git",
           "branch": "munch",
-          "defconfig": "vendor/violet-perf_defconfig",
+          "defconfig": "munch_defconfig",
           "arch": "arm64",
           "image": "Image.gz",
           "need-dtbo": true
         },
+
+        "patches": {
+
+        }
+      },
   
       "withKernelSU": {
         "enable": true,
         "installer": "https://github.com/magojohnji/KernelSU/raw/main/kernel/setup.sh",
         "tag": "main",
-        "apply-patch": true,
+        "apply-patch": false,
         "ksu_expected_size": "",
         "ksu_expected_hash": "",
         "make_bootimg": false,
@@ -59,7 +64,7 @@
       "AnyKernel3": {
         "enable": true,
         "link": "",
-        "branch": "single"
+        "branch": ""
       }
     }
   ]
