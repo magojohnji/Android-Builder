@@ -361,26 +361,17 @@ jobs:
           fi
   
       - name: 😋 Apply KernelSU patch
-        if: ${{ env.ENABLE_KERNELSU == 'true' }} && ${{ env.APPLY_KSU_PATCH == 'true' }}
+        if: ${{ env.APPLY_KSU_PATCH == 'true' }}
         run: |
-          PATCHES_DIR="$GITHUB_WORKSPACE/kernel_workspace/kernel_dir"
-
-          # Check if the patches directory exists and is not empty
-          if [ -d "$PATCHES_DIR" ] && [ "$(ls -A $PATCHES_DIR)" ]; then
-            echo "🔍 Found patches in $PATCHES_DIR. Applying them now..."
             cd $GITHUB_WORKSPACE/kernel_workspace/kernel_dir
-            git apply KernelSU-hook.patch
+            git apply $GITHUB_WORKSPACE/Patches/KernelSU-hook.patch
 
-              # Check if the patch was applied successfully
-              if [ $? -ne 0 ]; then
-                echo "❌ Failed to apply KernelSU-hook.patch"
-                exit 1
-              fi
-
+            # Check if the patch was applied successfully
+            if [ $? -ne 0 ]; then
+              echo "❌ Failed to apply KernelSU-hook.patch"
+              exit 1
+            fi
             echo "✅ KernelSU-hook.patch applied successfully"
-          else
-            echo "⚠️ KernelSU-hook.patch not found in $PATCHES_DIR"
-          fi
 
       - name: 😋 Setup LXC docker
         env:
