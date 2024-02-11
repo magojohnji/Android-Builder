@@ -4,7 +4,7 @@
       "name": "violet",
       "build-host": "GitHub-Action",
       "builder-name": "magojohnji",
-      "enableKprobes": false,
+      "enableKprobes": true,
       "enableOverlayFS": true,
       "disable-lto": false,
       "disable-cc-werror": false,
@@ -12,20 +12,28 @@
       "remove-unused-packages": true
     },
 
-    "kernelSource": {
-      "link": "https://github.com/magojohnji/android_kernel_xiaomi_violet.git",
-      "branch": "14",
-      "defconfig": "vendor/violet-perf_defconfig",
-      "arch": "arm64",
-      "image": "Image.gz-dtb",
-      "need-dtbo": true
+    "kernel": {
+      "basic": {
+        "link": "https://github.com/magojohnji/android_kernel_xiaomi_violet.git",
+        "branch": "14",
+        "defconfig": "vendor/violet-perf_defconfig",
+        "arch": "arm64",
+        "image": "Image.gz-dtb",
+        "need-dtbo": true
+      },
+
+      "patches": {
+        "dsp-hook.patch": {
+          "path": "./dsp-hook.patch"
+        }
+      }
     },
 
     "withKernelSU": {
       "enable": true,
       "installer": "https://raw.githubusercontent.com/tiann/KernelSU/main/kernel/setup.sh",
       "tag": "main",
-      "apply-patch": false,
+      "apply-patch": true,
       "ksu_expected_size": "",
       "ksu_expected_hash": "",
       "make_bootimg": true,
@@ -36,9 +44,19 @@
       {
         "url": "https://github.com/XSans0/WeebX-Clang/releases/download/WeebX-Clang-19.0.0git-release/WeebX-Clang-19.0.0git.tar.gz",
         "name": "clang",
-        "binaryEnv": [
-          "bin"
-        ]
+        "binaryEnv": "bin"
+      },
+
+      {
+        "url": "https://github.com/fiqri19102002/arm-gcc.git",
+        "name": "gcc-32",
+        "binaryEnv": "bin"
+      },
+
+      {
+        "url": "https://github.com/fiqri19102002/aarch64-gcc.git",
+        "name": "gcc-64",
+        "binaryEnv": "bin"
       }
     ],
 

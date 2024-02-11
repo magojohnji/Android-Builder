@@ -6,13 +6,7 @@ on:
       - 'website/**'
   pull_request: 
   repository_dispatch:
-  workflow_dispatch:
-    # inputs:
-    #   debug:
-    #     description: "DEBUG"
-    #     required: true
-    #     default: false
-    #     type: boolean            
+  workflow_dispatch:  
   schedule:
     - cron: "14 13 * * 5"
 
@@ -135,8 +129,7 @@ jobs:
           sudo apt install -y build-essential bc gcc-aarch64-linux-gnu gcc-arm-linux-gnueabi libssl-dev libfl-dev
           sudo apt install -y pwgen libswitch-perl policycoreutils minicom libxml-sax-base-perl libxml-simple-perl 
           sudo apt install -y llvm g++-multilib bison gperf zlib1g-dev automake
-          sudo apt install -y zip unzip tar gzip bzip2 rar unrar p7zip-full
-          # sudo apt install -y unlzma lzop cabextract cpio lrzuntar unace unalz arj nomarch zpaq unzstd brotli uudecode
+          sudo apt install -y tar bzip2 gzip unzip p7zip-full lzip lzma rar unrar cabextract lhasa arj nomarch zpaq brotli sharutils unace xz-utils unalz 
           mkdir -p $GITHUB_WORKSPACE/kernel_workspace
 
       # Set device name.
@@ -162,37 +155,23 @@ jobs:
           fi
           # tree kernel_dir
 
-      - name: 😋 Apply kernel patches for the first time
-        if: ${{ env.ENABLE_KERNELSU == 'true' }}
+      - name: 😋 Apply kernel patches (except KernelSU-hook.patch)
+        env:
+          patches: "${{ toJSON(matrix.CONFIG.patches) }}"
+        if: ${{ toJSON(matrix.CONFIG.patches) == '{}' }}
         run: |
-          # Define the directory containing the patches
-          PATCHES_DIR="$GITHUB_WORKSPACE/kernel_workspace/kernel_dir"
+          cd GITHUB_WORKSPACE/kernel_workspace/kernel_dir
 
-          # Check if the patches directory exists and is not empty
-          if [ -d "$PATCHES_DIR" ] && [ "$(ls -A $PATCHES_DIR)" ]; then
-            echo "🔍 Found patches in $PATCHES_DIR. Applying them now..."
+          patches_num=$(echo "${patches}" | jq 'length')
+          echo "🤔 There is $patches_num defined toolchains."
 
-            # Change to the kernel source directory
-            cd $GITHUB_WORKSPACE/kernel_workspace/kernel_dir
-            git apply dsp-hook.patch
+          for patch in $(echo "${patches}" | jq -r 'keys[]'); do
+            patch_path=$(echo "${patches}" | jq -r ".${patch}.path")
 
-            # # Apply each patch
-            # for patch in $PATCHES_DIR/*.patch; do
-            #   echo "📝 Applying $patch"
-            #   # git apply $patch
-              
+            git apply $patch_path
 
-            #   # Check if the patch was applied successfully
-            #   if [ $? -ne 0 ]; then
-            #     echo "❌ Failed to apply $patch"
-            #     exit 1
-            #   fi
-            # done
-
-            echo "✅ All patches applied successfully"
-          else
-            echo "⚠️ No patches found in $PATCHES_DIR"
-          fi
+            echo "🤔 Apply $patch => ($patch_path)"
+          done
 
       # Initialize ccache
       - name: 🚄 Setup ccache
@@ -396,6 +375,28 @@ jobs:
               echo "CONFIG_CC_WERROR=n" >> arch/${{ env.ARCH }}/configs/${{ env.KERNEL_DEFCONFIG_PATH }}
           fi
   
+      - name: 😋 Apply KernelSU patch
+        if: ${{ env.ENABLE_KERNELSU == 'true' }} && ${{ env.APPLY_KSU_PATCH == 'true' }}
+        run: |
+          PATCHES_DIR="$GITHUB_WORKSPACE/kernel_workspace/kernel_dir"
+
+          # Check if the patches directory exists and is not empty
+          if [ -d "$PATCHES_DIR" ] && [ "$(ls -A $PATCHES_DIR)" ]; then
+            echo "🔍 Found patches in $PATCHES_DIR. Applying them now..."
+            cd $GITHUB_WORKSPACE/kernel_workspace/kernel_dir
+            git apply KernelSU-hook.patch
+
+              # Check if the patch was applied successfully
+              if [ $? -ne 0 ]; then
+                echo "❌ Failed to apply KernelSU-hook.patch"
+                exit 1
+              fi
+
+            echo "✅ KernelSU-hook.patch applied successfully"
+          else
+            echo "⚠️ KernelSU-hook.patch not found in $PATCHES_DIR"
+          fi
+
       - name: 😋 Setup LXC docker
         env:
           DEFCONFIG: ${{ env.WORKSPACE }}/${{ env.KERNEL_NAME }}/arch/${{ steps.generate-args.outputs.ARCH }}/configs/${{env.KERNEL_DEFCONFIG_PATH}}
@@ -439,38 +440,6 @@ jobs:
             echo "🎖️ Apply xt_qtaguid.patch"
           fi
 
-      - name: 😋 Apply kernel patches for the second time
-        if: ${{ env.ENABLE_KERNELSU == 'true' }}
-        run: |
-          # Define the directory containing the patches
-          PATCHES_DIR="$GITHUB_WORKSPACE/kernel_workspace/kernel_dir"
-
-          # Check if the patches directory exists and is not empty
-          if [ -d "$PATCHES_DIR" ] && [ "$(ls -A $PATCHES_DIR)" ]; then
-            echo "🔍 Found patches in $PATCHES_DIR. Applying them now..."
-
-            # Change to the kernel source directory
-            cd $GITHUB_WORKSPACE/kernel_workspace/kernel_dir
-            git apply KernelSU-hook.patch
-
-            # # Apply each patch
-            # for patch in $PATCHES_DIR/*.patch; do
-            #   echo "📝 Applying $patch"
-            #   # git apply $patch
-              
-
-            #   # Check if the patch was applied successfully
-            #   if [ $? -ne 0 ]; then
-            #     echo "❌ Failed to apply $patch"
-            #     exit 1
-            #   fi
-            # done
-
-            echo "✅ All patches applied successfully"
-          else
-            echo "⚠️ No patches found in $PATCHES_DIR"
-          fi
-
       - name: 👍 Start building the kernel
         env:
           ARGS: ${{ steps.generate-args.outputs.ARGS }}
@@ -492,7 +461,7 @@ jobs:
           make O=out ${{ env.KERNEL_DEFCONFIG_PATH }}
           make ${{ env.ARGS }}
           
-          # tree ${{ env.OUT_DIR }}
+          tree ${{ env.OUT_DIR }}/arch/${{ env.ARCH }}/boot/
 
       - name: ⏰ Pack Anykernel3
         if: ${{ env.ENABLE_ANYKERNEL3 == 'true' }}
