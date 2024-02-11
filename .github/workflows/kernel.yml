@@ -392,9 +392,9 @@ jobs:
               echo "CONFIG_LTO_NONE=y" >> arch/${{ env.ARCH }}/configs/${{ env.KERNEL_DEFCONFIG_PATH }}
           fi
 
-          # if [ ${{ env.DISABLE_CC_WERROR }} = true ]; then
-          #     echo "CONFIG_CC_WERROR=n" >> arch/${{ env.ARCH }}/configs/${{ env.KERNEL_DEFCONFIG_PATH }}
-          # fi
+          if [ ${{ env.DISABLE_CC_WERROR }} = true ]; then
+              echo "CONFIG_CC_WERROR=n" >> arch/${{ env.ARCH }}/configs/${{ env.KERNEL_DEFCONFIG_PATH }}
+          fi
   
       - name: 😋 Setup LXC docker
         env:
