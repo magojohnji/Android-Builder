@@ -1,7 +1,7 @@
 [
     {
       "general":{
-        "name": "munch",
+        "name": "mondrian",
         "build-host": "GitHub-Action",
         "builder-name": "magojohnji",
         "enableKprobes": true,
