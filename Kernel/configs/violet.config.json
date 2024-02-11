@@ -44,21 +44,24 @@
       {
         "url": "https://github.com/XSans0/WeebX-Clang/releases/download/WeebX-Clang-19.0.0git-release/WeebX-Clang-19.0.0git.tar.gz",
         "name": "clang",
-        "binaryEnv": "bin"
+        "binaryEnv":[
+          "bin"]
       },
 
       {
         "repo": "https://github.com/fiqri19102002/arm-gcc.git",
         "branch": "release/elf-12",
         "name": "gcc-32",
-        "binaryEnv": "bin"
+        "binaryEnv":[
+          "bin"]
       },
 
       {
         "repo": "https://github.com/fiqri19102002/aarch64-gcc.git",
         "branch": "release/elf-12",
         "name": "gcc-64",
-        "binaryEnv": "bin"
+        "binaryEnv":[
+          "bin"]
       }
     ],
 

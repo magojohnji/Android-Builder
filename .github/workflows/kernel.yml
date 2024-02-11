@@ -158,7 +158,7 @@ jobs:
       - name: 😋 Apply kernel patches (except KernelSU-hook.patch)
         env:
           patches: "${{ toJSON(matrix.CONFIG.kernel.patches) }}"
-        if: ${{ toJSON(matrix.CONFIG.kernel.patches) == '{}' }}
+        if: ${{ toJSON(matrix.CONFIG.kernel.patches) != '{}' }}
         run: |
           cd GITHUB_WORKSPACE/kernel_workspace/kernel_dir
 
