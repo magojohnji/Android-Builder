@@ -1,0 +1,88 @@
+[
+    {
+      "general":{
+        "name": "munch",
+        "build-host": "GitHub-Action",
+        "builder-name": "magojohnji",
+        "enableKprobes": true,
+        "enableOverlayFS": true,
+        "disable-lto": false,
+        "disable-cc-werror": false,
+        "release": true,
+        "remove-unused-packages": true
+      },
+  
+      "kernel": {
+        "basic": {
+          "link": "https://github.com/magojohnji/Realking_kernel_sm8250.git",
+          "branch": "munch",
+          "defconfig": "vendor/violet-perf_defconfig",
+          "arch": "arm64",
+          "image": "Image.gz-dtb",
+          "need-dtbo": true
+        },
+  
+        "patches": {
+          "dsp-hook": {
+            "path": "./dsp-hook.patch"
+          }
+        }
+      },
+  
+      "withKernelSU": {
+        "enable": true,
+        "installer": "https://github.com/magojohnji/KernelSU/raw/main/kernel/setup.sh",
+        "tag": "main",
+        "apply-patch": true,
+        "ksu_expected_size": "",
+        "ksu_expected_hash": "",
+        "make_bootimg": true,
+        "bootimg_link": "https://raw.githubusercontent.com/magojohnji/magojohnji/main/boot/boot_evox_violet.img"
+      },
+  
+      "toolchains": [
+        {
+          "url": "https://github.com/XSans0/WeebX-Clang/releases/download/WeebX-Clang-19.0.0git-release/WeebX-Clang-19.0.0git.tar.gz",
+          "name": "clang",
+          "binaryEnv":[
+            "bin"]
+        },
+  
+        {
+          "repo": "https://github.com/fiqri19102002/arm-gcc.git",
+          "branch": "release/elf-12",
+          "name": "gcc-32",
+          "binaryEnv":[
+            "bin"]
+        },
+  
+        {
+          "repo": "https://github.com/fiqri19102002/aarch64-gcc.git",
+          "branch": "release/elf-12",
+          "name": "gcc-64",
+          "binaryEnv":[
+            "bin"]
+        }
+      ],
+  
+      "ccache": true,
+  
+      "enableLXC": false,
+  
+      "params": {
+        "CC": "clang",
+        "externalCommands": {
+          "CROSS_COMPILE": "aarch64-linux-gnu-",
+          "LLVM": "1",
+          "LLVM_IAS": "1"
+        }
+      },
+  
+      "AnyKernel3": {
+        "enable": true,
+        "link": "https://github.com/rezaadi0105/AnyKernel3.git",
+        "branch": "single"
+      }
+    }
+  ]
+  
