@@ -7,12 +7,12 @@ on:
   pull_request: 
   repository_dispatch:
   workflow_dispatch:
-    inputs:
-      debug:
-        description: "DEBUG"
-        required: true
-        default: false
-        type: boolean            
+    # inputs:
+    #   debug:
+    #     description: "DEBUG"
+    #     required: true
+    #     default: false
+    #     type: boolean            
   schedule:
     - cron: "14 13 * * 5"
 
@@ -43,7 +43,7 @@ jobs:
 
 
   Compile-Kernel:
-    name: "🐎 Compile kernel"
+    name: "🐎 Compile the kernel"
     runs-on: ubuntu-latest
     needs:
       - Read-configuration
@@ -67,7 +67,6 @@ jobs:
       DISABLE_CC_WERROR: ${{ matrix.CONFIG.general.disable-cc-werror }}
       RELEASE: ${{ matrix.CONFIG.general.release }}
       REMOVE_UNUSED_PACKAGES: ${{ matrix.CONFIG.general.remove-unused-packages }}
-      DEBUG: ${{ matrix.CONFIG.general.debug }}
 
       # Kernel source configuration
       KERNEL_LINK: ${{ matrix.CONFIG.kernelSource.link }}
@@ -499,6 +498,7 @@ jobs:
           ARCH: ${{ steps.generate-args.outputs.ARCH }}
           ANYKERNEL3_FILE: "${{ env.WORKSPACE }}/AnyKernel3-${{ env.KERNEL_NAME }}-${{ env.BUILD_DATE }}"
         run: |
+          cd $GITHUB_WORKSPACE/kernel_workspace/
           if [ ${{ env.AK3_LINK }} = '' ]; then
             git clone --recursive --depth=1 -j $(nproc) https://github.com/osm0sis/AnyKernel3 AnyKernel3
             sed -i 's/do.devicecheck=1/do.devicecheck=0/g' AnyKernel3/anykernel.sh
@@ -528,9 +528,8 @@ jobs:
             fi
           fi
 
-          cd AnyKernel3/
+          cd ./AnyKernel3/
           zip -q -r "${{ env.ANYKERNEL3_FILE }}.zip" *
-
 
       - name: Setting up KernelSU boot image
         if: env.MK_BOOT == 'true'
@@ -555,23 +554,6 @@ jobs:
             cp -rf ${{ env.OUT_DIR }}/arch/${{ env.KERNEL_ARCH }}/boot/${{ env.KERNEL_IMAGE }} ./kernel
             $GITHUB_WORKSPACE/kernel_workspace/tools/magiskboot repack ${{env.SOURCE_KERNELSU_BOOTIMG_PATH}} $GITHUB_WORKSPACE/kernel_workspace/bootimg_tmp/boot-kernelsu.img
           fi
-
-      - name: ⛑️ Pack things for debugging
-        if: ${{ env.DEBUG == 'true' }} || ${{ inputs.debug == 'true' }}
-        run: |
-          cd $GITHUB_WORKSPACE/kernel_workspace
-          tar czvf debug.tar .
-          xz -k debug.tar
-
-      - name: 💛 Upload Image
-        uses: actions/upload-artifact@v4
-        env:
-          ARCH: ${{ steps.generate-args.outputs.ARCH }}
-        with:
-          name: ${{ env.KERNEL_NAME }}-${{ env.BUILD_DATE }}-Image
-          path: ${{ env.OUT_DIR }}/arch/${{ env.ARCH }}/boot/Image
-          if-no-files-found: ignore
-          retention-days: 7
 
       - name: 💙 Upload kernel image
         uses: actions/upload-artifact@v4
@@ -610,7 +592,7 @@ jobs:
         if: ${{ env.ENABLE_ANYKERNEL3 == 'true' }}
         with:
           name: "${{ env.ANYKERNEL3_FILE }}"
-          path: AnyKernel3/*
+          path: $GITHUB_WORKSPACE/kernel_workspace/AnyKernel3/${{ env.ANYKERNEL3_FILE }}.zip
 
       - name: "💿 Upload boot image => (${{ env.BUILD_DATE }})"
         env:
@@ -620,15 +602,6 @@ jobs:
         with:
           name: "${{ env.BOOTIMG_FILE }}"
           path: $GITHUB_WORKSPACE/kernel_workspace/bootimg_tmp/boot-kernelsu.img
-
-      - name: "⛑️ Upload things for debugging => (${{ env.BUILD_DATE }})"
-        env:
-          DEBUG_FILE: "Debug-${{ env.KERNEL_NAME }}-${{ env.BUILD_DATE }}"
-        uses: actions/upload-artifact@v4
-        if: ${{ env.DEBUG == 'true' }} || ${{ inputs.debug == 'true' }}
-        with:
-          name: "${{ env.DEBUG_FILE }}"
-          path: $GITHUB_WORKSPACE/kernel_workspace/debug.tar.xz
 
       - name: 🧧 Create GitHub Release => (${{ env.BUILD_DATE }})
         continue-on-error: true
@@ -644,7 +617,7 @@ jobs:
             ${{ env.OUT_DIR }}/arch/${{ env.ARCH }}/boot/Image.gz-dtb
             ${{ env.OUT_DIR }}/arch/${{ env.ARCH }}/boot/dtb
             ${{ env.OUT_DIR }}/arch/${{ env.ARCH }}/boot/dtbo.img
-            AnyKernel3/*
+            $GITHUB_WORKSPACE/kernel_workspace/AnyKernel3/${{ env.ANYKERNEL3_FILE }}.zip
             $GITHUB_WORKSPACE/kernel_workspace/bootimg_tmp/boot-kernelsu.img
           generate_release_notes: true
       
