@@ -149,7 +149,7 @@ jobs:
             aria2c ${{ env.KERNEL_LINK }}
             kernel_file_name=$(ls)
 
-            $GITHUB_WORKSPACE/kernel_workspace/tools/Extract.sh $kernel_file_name
+            $GITHUB_WORKSPACE/kernel_workspace/tools/Extract.sh $GITHUB_WORKSPACE/kernel_workspace/kernel_dir/$kernel_file_name
             rm -rf $kernel_file_name
           fi
           # tree kernel_dir
@@ -232,7 +232,7 @@ jobs:
               # Get filename
               filename="${toolchain_url##*/}"
 
-              $GITHUB_WORKSPACE/kernel_workspace/tools/Extract.sh -o $toolchain_name $filename
+              $GITHUB_WORKSPACE/kernel_workspace/tools/Extract.sh -o $toolchain_name $GITHUB_WORKSPACE/kernel_workspace/kernel_dir/toolchains/$filename
 
               # Delete file to avoid duplicate name conflicts 
               rm $filename
