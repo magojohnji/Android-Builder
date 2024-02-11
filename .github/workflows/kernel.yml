@@ -232,23 +232,7 @@ jobs:
 
               # Get filename
               filename="${toolchain_url##*/}"
-              case "$filename" in
-                *.zip)
-                  unzip -d $toolchain_name "$filename"
-                  ;;
-                *.tar)
-                  tar xvf "$filename" -C $toolchain_name
-                  ;;
-                *.tar.gz)
-                  tar zxvf "$filename" -C $toolchain_name
-                  ;;
-                *.rar)
-                  unrar x "$filename" $toolchain_name
-                  ;;
-                *)
-                  echo "unknown file type: $filename"
-                  ;;
-              esac
+
               # Delete file to avoid duplicate name conflicts 
               rm $filename
 
@@ -346,33 +330,33 @@ jobs:
             curl -LSs "${{ env.KERNELSU_INSTALLER }}" | bash -s ${{ env.KERNELSU_TAG }}
           fi
 
-          if grep -q "CONFIG_KSU" arch/${{ env.ARCH }}/configs/${{ env.KERNEL_DEFCONFIG_PATH }}; then
-            sed -i 's/# CONFIG_KSU is not set/CONFIG_KSU=y/g' arch/${{ env.ARCH }}/configs/${{ env.KERNEL_DEFCONFIG_PATH }}
-            sed -i 's/CONFIG_KSU=n/CONFIG_KSU=y/g' arch/${{ env.ARCH }}/configs/${{ env.KERNEL_DEFCONFIG_PATH }}
+          if grep -q "CONFIG_KSU" arch/${{ env.KERNEL_ARCH }}/configs/${{ env.KERNEL_DEFCONFIG_PATH }}; then
+            sed -i 's/# CONFIG_KSU is not set/CONFIG_KSU=y/g' arch/${{ env.KERNEL_ARCH }}/configs/${{ env.KERNEL_DEFCONFIG_PATH }}
+            sed -i 's/CONFIG_KSU=n/CONFIG_KSU=y/g' arch/${{ env.KERNEL_ARCH }}/configs/${{ env.KERNEL_DEFCONFIG_PATH }}
           else
-              echo "CONFIG_KSU=y" >> arch/${{ env.ARCH }}/configs/${{ env.KERNEL_DEFCONFIG_PATH }}
+              echo "CONFIG_KSU=y" >> arch/${{ env.KERNEL_ARCH }}/configs/${{ env.KERNEL_DEFCONFIG_PATH }}
           fi
 
           if [ ${{ env.ENABLE_KP }} = true -a ${{ env.APPLY_KSU_PATCH }} != true ]; then
-              echo "CONFIG_MODULES=y" >> arch/${{ env.ARCH }}/configs/${{ env.KERNEL_DEFCONFIG_PATH }}
-              echo "CONFIG_KPROBES=y" >> arch/${{ env.ARCH }}/configs/${{ env.KERNEL_DEFCONFIG_PATH }}
-              echo "CONFIG_HAVE_KPROBES=y" >> arch/${{ env.ARCH }}/configs/${{ env.KERNEL_DEFCONFIG_PATH }}
-              echo "CONFIG_KPROBE_EVENTS=y" >> arch/${{ env.ARCH }}/configs/${{ env.KERNEL_DEFCONFIG_PATH }}
+              echo "CONFIG_MODULES=y" >> arch/${{ env.KERNEL_ARCH }}/configs/${{ env.KERNEL_DEFCONFIG_PATH }}
+              echo "CONFIG_KPROBES=y" >> arch/${{ env.KERNEL_ARCH }}/configs/${{ env.KERNEL_DEFCONFIG_PATH }}
+              echo "CONFIG_HAVE_KPROBES=y" >> arch/${{ env.KERNEL_ARCH }}/configs/${{ env.KERNEL_DEFCONFIG_PATH }}
+              echo "CONFIG_KPROBE_EVENTS=y" >> arch/${{ env.KERNEL_ARCH }}/configs/${{ env.KERNEL_DEFCONFIG_PATH }}
           fi
 
           if [ ${{ env.ENABLE_OFS }} = true ]; then
-              echo "CONFIG_OVERLAY_FS=y" >> arch/${{ env.ARCH }}/configs/${{ env.KERNEL_DEFCONFIG_PATH }}
+              echo "CONFIG_OVERLAY_FS=y" >> arch/${{ env.KERNEL_ARCH }}/configs/${{ env.KERNEL_DEFCONFIG_PATH }}
           fi
 
           if [ ${{ env.DISABLE_LTO }} = true ]; then
-              sed -i 's/CONFIG_LTO=y/CONFIG_LTO=n/' arch/${{ env.ARCH }}/configs/${{ env.KERNEL_DEFCONFIG_PATH }}
-              sed -i 's/CONFIG_LTO_CLANG=y/CONFIG_LTO_CLANG=n/' arch/${{ env.ARCH }}/configs/${{ env.KERNEL_DEFCONFIG_PATH }}
-              sed -i 's/CONFIG_THINLTO=y/CONFIG_THINLTO=n/' arch/${{ env.ARCH }}/configs/${{ env.KERNEL_DEFCONFIG_PATHKERNEL_DEFCONFIG_PATH }}
-              echo "CONFIG_LTO_NONE=y" >> arch/${{ env.ARCH }}/configs/${{ env.KERNEL_DEFCONFIG_PATH }}
+              sed -i 's/CONFIG_LTO=y/CONFIG_LTO=n/' arch/${{ env.KERNEL_ARCH }}/configs/${{ env.KERNEL_DEFCONFIG_PATH }}
+              sed -i 's/CONFIG_LTO_CLANG=y/CONFIG_LTO_CLANG=n/' arch/${{ env.KERNEL_ARCH }}/configs/${{ env.KERNEL_DEFCONFIG_PATH }}
+              sed -i 's/CONFIG_THINLTO=y/CONFIG_THINLTO=n/' arch/${{ env.KERNEL_ARCH }}/configs/${{ env.KERNEL_DEFCONFIG_PATHKERNEL_DEFCONFIG_PATH }}
+              echo "CONFIG_LTO_NONE=y" >> arch/${{ env.KERNEL_ARCH }}/configs/${{ env.KERNEL_DEFCONFIG_PATH }}
           fi
 
           if [ ${{ env.DISABLE_CC_WERROR }} = true ]; then
-              echo "CONFIG_CC_WERROR=n" >> arch/${{ env.ARCH }}/configs/${{ env.KERNEL_DEFCONFIG_PATH }}
+              echo "CONFIG_CC_WERROR=n" >> arch/${{ env.KERNEL_ARCH }}/configs/${{ env.KERNEL_DEFCONFIG_PATH }}
           fi
   
       - name: 😋 Apply KernelSU patch
@@ -461,13 +445,13 @@ jobs:
           make O=out ${{ env.KERNEL_DEFCONFIG_PATH }}
           make ${{ env.ARGS }}
           
-          tree ${{ env.OUT_DIR }}/arch/${{ env.ARCH }}/boot/
+          tree ${{ env.OUT_DIR }}/arch/${{ env.KERNEL_ARCH }}/boot/
 
       - name: ⏰ Pack Anykernel3
         if: ${{ env.ENABLE_ANYKERNEL3 == 'true' }}
         env:
           PARAMS: "${{ toJSON(matrix.CONFIG.AnyKernel3) }}"
-          ARCH: ${{ steps.generate-args.outputs.ARCH }}
+          ARCH: ${{ steps.generate-args.outputs.KERNEL_ARCH }}
           ANYKERNEL3_FILE: "${{ env.WORKSPACE }}/AnyKernel3-${{ env.KERNEL_NAME }}-${{ env.BUILD_DATE }}"
         run: |
           cd $GITHUB_WORKSPACE/kernel_workspace/
@@ -483,20 +467,20 @@ jobs:
           fi
 
 
-          if [ -e "${{ env.OUT_DIR }}/arch/${{ env.ARCH }}/boot/Image.gz-dtb" ]; then
-            cp -f ${{ env.OUT_DIR }}/arch/${{ env.ARCH }}/boot/Image.gz-dtb ./AnyKernel3/
+          if [ -e "${{ env.OUT_DIR }}/arch/${{ env.KERNEL_ARCH }}/boot/Image.gz-dtb" ]; then
+            cp -f ${{ env.OUT_DIR }}/arch/${{ env.KERNEL_ARCH }}/boot/Image.gz-dtb ./AnyKernel3/
           else
-            if [ -e "${{ env.OUT_DIR }}/arch/${{ env.ARCH }}/boot/Image" ]; then
-              cp -f ${{ env.OUT_DIR }}/arch/${{ env.ARCH }}/boot/Image ./AnyKernel3/
+            if [ -e "${{ env.OUT_DIR }}/arch/${{ env.KERNEL_ARCH }}/boot/Image" ]; then
+              cp -f ${{ env.OUT_DIR }}/arch/${{ env.KERNEL_ARCH }}/boot/Image ./AnyKernel3/
             fi
-            if [ -e "${{ env.OUT_DIR }}/arch/${{ env.ARCH }}/boot/Image.gz" ]; then
-              cp -f ${{ env.OUT_DIR }}/arch/${{ env.ARCH }}/boot/Image.gz ./AnyKernel3/
+            if [ -e "${{ env.OUT_DIR }}/arch/${{ env.KERNEL_ARCH }}/boot/Image.gz" ]; then
+              cp -f ${{ env.OUT_DIR }}/arch/${{ env.KERNEL_ARCH }}/boot/Image.gz ./AnyKernel3/
             fi
-            if [ -e "${{ env.OUT_DIR }}/arch/${{ env.ARCH }}/boot/dtbo" ]; then
-              cp -f ${{ env.OUT_DIR }}/arch/${{ env.ARCH }}/boot/dtbo ./AnyKernel3/
+            if [ -e "${{ env.OUT_DIR }}/arch/${{ env.KERNEL_ARCH }}/boot/dtbo" ]; then
+              cp -f ${{ env.OUT_DIR }}/arch/${{ env.KERNEL_ARCH }}/boot/dtbo ./AnyKernel3/
             fi
-            if [ -e "${{ env.OUT_DIR }}/arch/${{ env.ARCH }}/boot/dtbo.img" ]; then
-              cp -f ${{ env.OUT_DIR }}/arch/${{ env.ARCH }}/boot/dtbo.img ./AnyKernel3/
+            if [ -e "${{ env.OUT_DIR }}/arch/${{ env.KERNEL_ARCH }}/boot/dtbo.img" ]; then
+              cp -f ${{ env.OUT_DIR }}/arch/${{ env.KERNEL_ARCH }}/boot/dtbo.img ./AnyKernel3/
             fi
           fi
 
@@ -533,18 +517,18 @@ jobs:
           ARCH: ${{ steps.generate-args.outputs.ARCH }}
         with:
           name: ${{ env.KERNEL_NAME }}-${{ env.BUILD_DATE }}-${{ env.KERNEL_IMAGE }}
-          path: ${{ env.OUT_DIR }}/arch/${{ env.ARCH }}/boot/${{ env.KERNEL_IMAGE }}
+          path: ${{ env.OUT_DIR }}/arch/${{ env.KERNEL_ARCH}}/boot/${{ env.KERNEL_IMAGE }}
           if-no-files-found: ignore
           retention-days: 7
 
       - name: ❤️ Upload dtbo.img
         uses: actions/upload-artifact@v4
         env:
-          ARCH: ${{ steps.generate-args.outputs.ARCH }}
+          ARCH: ${{ steps.generate-args.outputs.KERNEL_ARCH }}
         if: ${{ env.NEED_DTBO == 'true' }}
         with:
           name: ${{ env.KERNEL_NAME }}-${{ env.BUILD_DATE }}-dtbo.img
-          path: ${{ env.OUT_DIR }}/arch/${{ env.ARCH }}/boot/dtbo.img
+          path: ${{ env.OUT_DIR }}/arch/${{ env.KERNEL_ARCH }}/boot/dtbo.img
           if-no-files-found: ignore
           retention-days: 7
 
@@ -554,7 +538,7 @@ jobs:
           ARCH: ${{ steps.generate-args.outputs.ARCH }}
         with:
           name: ${{ env.KERNEL_NAME }}-${{ env.BUILD_DATE }}-Output
-          path: ${{ env.OUT_DIR }}/arch/${{ env.ARCH }}/boot/
+          path: ${{ env.OUT_DIR }}/arch/${{ env.KERNEL_ARCH }}/boot/
           retention-days: 7
 
       - name: "💾 Upload AnyKernel3 image => (${{ env.BUILD_DATE }})"
@@ -584,11 +568,11 @@ jobs:
         with:
           tag_name: Build-${{ env.DEVICE }}-${{ env.BUILD_DATE }}.${{ github.run_number }}
           files: |
-            ${{ env.OUT_DIR }}/arch/${{ env.ARCH }}/boot/Image
-            ${{ env.OUT_DIR }}/arch/${{ env.ARCH }}/boot/Image.gz
-            ${{ env.OUT_DIR }}/arch/${{ env.ARCH }}/boot/Image.gz-dtb
-            ${{ env.OUT_DIR }}/arch/${{ env.ARCH }}/boot/dtb
-            ${{ env.OUT_DIR }}/arch/${{ env.ARCH }}/boot/dtbo.img
+            ${{ env.OUT_DIR }}/arch/${{ env.KERNEL_ARCH }}/boot/Image
+            ${{ env.OUT_DIR }}/arch/${{ env.KERNEL_ARCH }}/boot/Image.gz
+            ${{ env.OUT_DIR }}/arch/${{ env.KERNEL_ARCH }}/boot/Image.gz-dtb
+            ${{ env.OUT_DIR }}/arch/${{ env.KERNEL_ARCH }}/boot/dtb
+            ${{ env.OUT_DIR }}/arch/${{ env.KERNEL_ARCH }}/boot/dtbo.img
             $GITHUB_WORKSPACE/kernel_workspace/AnyKernel3/${{ env.ANYKERNEL3_FILE }}.zip
             $GITHUB_WORKSPACE/kernel_workspace/bootimg_tmp/boot-kernelsu.img
           generate_release_notes: true
