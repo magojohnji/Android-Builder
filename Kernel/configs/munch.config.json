@@ -18,16 +18,9 @@
           "branch": "munch",
           "defconfig": "vendor/violet-perf_defconfig",
           "arch": "arm64",
-          "image": "Image.gz-dtb",
+          "image": "Image.gz",
           "need-dtbo": true
         },
-  
-        "patches": {
-          "dsp-hook": {
-            "path": "./dsp-hook.patch"
-          }
-        }
-      },
   
       "withKernelSU": {
         "enable": true,
@@ -36,30 +29,14 @@
         "apply-patch": true,
         "ksu_expected_size": "",
         "ksu_expected_hash": "",
-        "make_bootimg": true,
-        "bootimg_link": "https://raw.githubusercontent.com/magojohnji/magojohnji/main/boot/boot_evox_violet.img"
+        "make_bootimg": false,
+        "bootimg_link": ""
       },
   
       "toolchains": [
         {
-          "url": "https://github.com/XSans0/WeebX-Clang/releases/download/WeebX-Clang-19.0.0git-release/WeebX-Clang-19.0.0git.tar.gz",
+          "url": "https://github.com/ZyCromerZ/Clang/releases/download/19.0.0git-20240213-release/Clang-19.0.0git-20240213.tar.gz",
           "name": "clang",
-          "binaryEnv":[
-            "bin"]
-        },
-  
-        {
-          "repo": "https://github.com/fiqri19102002/arm-gcc.git",
-          "branch": "release/elf-12",
-          "name": "gcc-32",
-          "binaryEnv":[
-            "bin"]
-        },
-  
-        {
-          "repo": "https://github.com/fiqri19102002/aarch64-gcc.git",
-          "branch": "release/elf-12",
-          "name": "gcc-64",
           "binaryEnv":[
             "bin"]
         }
@@ -73,14 +50,15 @@
         "CC": "clang",
         "externalCommands": {
           "CROSS_COMPILE": "aarch64-linux-gnu-",
-          "LLVM": "1",
-          "LLVM_IAS": "1"
+          "NM": "llvm-nm",
+          "OBJDUMP": "llvm-objdump",
+          "STRIP": "llvm-strip"
         }
       },
   
       "AnyKernel3": {
         "enable": true,
-        "link": "https://github.com/rezaadi0105/AnyKernel3.git",
+        "link": "",
         "branch": "single"
       }
     }

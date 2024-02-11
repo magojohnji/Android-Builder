@@ -121,6 +121,7 @@ jobs:
       # Install prerequisites for Ubuntu
       - name: ⭐ Install prerequisites
         run: |
+          mkdir -p $GITHUB_WORKSPACE/kernel_workspace/tools
           sudo apt update
           sudo apt install -y curl git ftp lftp wget aria2 libarchive-tools ccache python2 python2-dev python3
           sudo apt install -y pngcrush schedtool dpkg-dev liblz4-tool make optipng maven device-tree-compiler 
@@ -130,7 +131,7 @@ jobs:
           sudo apt install -y pwgen libswitch-perl policycoreutils minicom libxml-sax-base-perl libxml-simple-perl 
           sudo apt install -y llvm g++-multilib bison gperf zlib1g-dev automake
           sudo apt install -y tar bzip2 gzip unzip p7zip-full lzip lzma rar unrar cabextract lhasa arj nomarch zpaq brotli sharutils unace xz-utils unalz 
-          mkdir -p $GITHUB_WORKSPACE/kernel_workspace
+          mv $GITHUB_WORKSPACE/Scripts/Extract.sh $GITHUB_WORKSPACE/kernel_workspace/tools/Extract.sh
 
       # Set device name.
       - name: ⏰ Set device name
@@ -139,7 +140,7 @@ jobs:
       - name: 🌟 Clone kernel source => (${{ env.KERNEL_LINK }})
         run: |
           cd $GITHUB_WORKSPACE/kernel_workspace
-          rm -rf kernel_dir
+
           if [[ ${{ env.KERNEL_LINK }} =~ git ]]; then
             git clone --recurse-submodules --depth=1 -j $(nproc) --branch ${{ env.KERNEL_BRANCH }} ${{ env.KERNEL_LINK }} kernel_dir
           else
@@ -147,11 +148,9 @@ jobs:
             cd kernel_dir
             aria2c ${{ env.KERNEL_LINK }}
             kernel_file_name=$(ls)
-            aria2c https://github.com/magojohnji/Android-Builder/raw/main/.Scripts/Extract.sh
-            chmod +x ./extract.sh
-            ./extract.sh $kernel_file_name
+
+            $GITHUB_WORKSPACE/kernel_workspace/tools/Extract.sh $kernel_file_name
             rm -rf $kernel_file_name
-            rm -rf ././extract.sh
           fi
           # tree kernel_dir
 
@@ -233,6 +232,8 @@ jobs:
               # Get filename
               filename="${toolchain_url##*/}"
 
+              $GITHUB_WORKSPACE/kernel_workspace/tools/Extract.sh -o $toolchain_name $filename
+
               # Delete file to avoid duplicate name conflicts 
               rm $filename
 
@@ -255,7 +256,6 @@ jobs:
         if: env.MK_BOOT == 'true'
         run: |
           cd $GITHUB_WORKSPACE/kernel_workspace
-          mkdir tools
           git clone --recurse-submodules https://github.com/magojohnji/magiskboot-linux.git magiskboot
           cd magiskboot
           cp ./x86_64/magiskboot ../tools/
