@@ -8,7 +8,7 @@ on:
   repository_dispatch:
   workflow_dispatch:
     inputs:
-      release:
+      debug:
         description: "DEBUG"
         required: true
         default: false
@@ -557,7 +557,7 @@ jobs:
           fi
 
       - name: ⛑️ Pack things for debugging
-        if: ${{ env.DEBUG == 'true' }}
+        if: ${{ env.DEBUG == 'true' }} || ${{ inputs.debug == 'true' }}
         run: |
           cd $GITHUB_WORKSPACE
           tar czvf debug.tar .
@@ -573,38 +573,19 @@ jobs:
           if-no-files-found: ignore
           retention-days: 7
 
-      - name: 💙 Upload Image.gz
+      - name: 💙 Upload kernel image
         uses: actions/upload-artifact@v4
         env:
           ARCH: ${{ steps.generate-args.outputs.ARCH }}
         with:
-          name: ${{ env.KERNEL_NAME }}-${{ env.BUILD_DATE }}-Image.gz
-          path: ${{ env.OUT_DIR }}/arch/${{ env.ARCH }}/boot/Image.gz
-          if-no-files-found: ignore
-          retention-days: 7
-
-      - name: 💙 Upload Image.gz-dtb
-        uses: actions/upload-artifact@v4
-        env:
-          ARCH: ${{ steps.generate-args.outputs.ARCH }}
-        with:
-          name: ${{ env.KERNEL_NAME }}-${{ env.BUILD_DATE }}-Image.gz-dtb
-          path: ${{ env.OUT_DIR }}/arch/${{ env.ARCH }}/boot/Image.gz-dtb
-          if-no-files-found: ignore
-          retention-days: 7
-
-      - name: 💜 Upload dtb
-        uses: actions/upload-artifact@v4
-        env:
-          ARCH: ${{ steps.generate-args.outputs.ARCH }}
-        with:
-          name: ${{ env.KERNEL_NAME }}-${{ env.BUILD_DATE }}-dtb
-          path: ${{ env.OUT_DIR }}/arch/${{ env.ARCH }}/boot/dtb
+          name: ${{ env.KERNEL_NAME }}-${{ env.BUILD_DATE }}-${{ env.KERNEL_IMAGE }}
+          path: ${{ env.OUT_DIR }}/arch/${{ env.ARCH }}/boot/${{ env.KERNEL_IMAGE }}
           if-no-files-found: ignore
           retention-days: 7
 
       - name: ❤️ Upload dtbo.img
         uses: actions/upload-artifact@v4
+        if: ${{ env.NEED_DTBO == 'true' }}
         env:
           ARCH: ${{ steps.generate-args.outputs.ARCH }}
         if: ${{ env.NEED_DTBO == 'true' }}
@@ -627,7 +608,7 @@ jobs:
         env:
           ANYKERNEL3_FILE: "AnyKernel3-${{ env.KERNEL_NAME }}-${{ env.BUILD_DATE }}"
         uses: actions/upload-artifact@v4
-        if: ${{ env.USE_ANYKERNEL3 == 'true' }}
+        if: ${{ env.ENABLE_ANYKERNEL3 == 'true' }}
         with:
           name: "${{ env.ANYKERNEL3_FILE }}"
           path: AnyKernel3/*
@@ -645,7 +626,7 @@ jobs:
         env:
           DEBUG_FILE: "Debug-${{ env.KERNEL_NAME }}-${{ env.BUILD_DATE }}"
         uses: actions/upload-artifact@v4
-        if: ${{ env.DEBUG == 'true' }}
+        if: ${{ env.DEBUG == 'true' }} || ${{ inputs.debug == 'true' }}
         with:
           name: "${{ env.DEBUG_FILE }}"
           path: $GITHUB_WORKSPACE/debug.tar.xz
@@ -671,11 +652,11 @@ jobs:
       - name: Add job summary
         run: |
           echo '### RESULTS 🚀' >> $GITHUB_STEP_SUMMARY
-          echo '| :Step | Time duration | Result | Commit Hash |' >> $GITHUB_STEP_SUMMARY
+          echo '| Step | Time duration | Result | Commit Hash |' >> $GITHUB_STEP_SUMMARY
           echo '| ---- | ---- | ---- | ---- |' >> $GITHUB_STEP_SUMMARY
-          echo '| :Get kernel source |  |  |  |' >> $GITHUB_STEP_SUMMARY
-          echo '| :Get toolchains |  |  |  |' >> $GITHUB_STEP_SUMMARY
-          echo '| :Compile the kernel |  |  |  |' >> $GITHUB_STEP_SUMMARY
+          echo '| Get kernel source |  |  |  |' >> $GITHUB_STEP_SUMMARY
+          echo '| Get toolchains |  |  |  |' >> $GITHUB_STEP_SUMMARY
+          echo '| Compile the kernel |  |  |  |' >> $GITHUB_STEP_SUMMARY
 
           echo '- Kernel builder' >> $GITHUB_STEP_SUMMARY
           echo '- Build host' >> $GITHUB_STEP_SUMMARY

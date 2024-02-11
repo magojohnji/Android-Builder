@@ -8,9 +8,9 @@
       "enableOverlayFS": true,
       "disable-lto": false,
       "disable-cc-werror": false,
-      "release": false,
+      "release": true,
       "remove-unused-packages": true,
-      "debug": false
+      "debug": true
     },
 
     "kernelSource": {
