@@ -14,7 +14,7 @@
   
       "kernel": {
         "basic": {
-          "link": "https://github.com/LowTension/android_kernel_xiaomi_sm8475",
+          "link": "https://github.com/magojohnji/android_kernel_xiaomi_sm8475.git",
           "branch": "staging",
           "defconfig": "mondrian_defconfig",
           "arch": "arm64",
