@@ -381,9 +381,9 @@ jobs:
               echo "CONFIG_KPROBE_EVENTS=y" >> arch/${{ env.ARCH }}/configs/${{ env.KERNEL_DEFCONFIG_PATH }}
           fi
 
-          # if [ ${{ env.ENABLE_OFS }} = true ]; then
-          #     echo "CONFIG_OVERLAY_FS=y" >> arch/${{ env.ARCH }}/configs/${{ env.KERNEL_DEFCONFIG_PATH }}
-          # fi
+          if [ ${{ env.ENABLE_OFS }} = true ]; then
+              echo "CONFIG_OVERLAY_FS=y" >> arch/${{ env.ARCH }}/configs/${{ env.KERNEL_DEFCONFIG_PATH }}
+          fi
 
           # if [ ${{ env.DISABLE_LTO }} = true ]; then
           #     sed -i 's/CONFIG_LTO=y/CONFIG_LTO=n/' arch/${{ env.ARCH }}/configs/${{ env.KERNEL_DEFCONFIG_PATH }}
