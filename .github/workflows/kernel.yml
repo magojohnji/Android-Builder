@@ -27,7 +27,7 @@ jobs:
         id: generate-matrix
         run: |
           echo "CONFIGS<<EOF" >> $GITHUB_OUTPUT
-          jq -s '[.[][]]' Kernel/configs/violet.config.json >> $GITHUB_OUTPUT
+          jq -s '[.[][]]' Kernel/configs/*.config.json >> $GITHUB_OUTPUT
           echo "EOF" >> $GITHUB_OUTPUT
 
       # Set compile time.
