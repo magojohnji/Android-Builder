@@ -303,9 +303,9 @@ jobs:
           mkdir bootimg_tmp
           aria2c -o ./bootimg_tmp/boot-source-kernelsu.img ${{ env.BOOTIMG_LINK }}
           if [ -f ./bootimg_tmp/boot-source-kernelsu.img ]; then
-              echo "SOURCE_KERNELSU_BOOTIMG_PATH=$GITHUB_WORKSPACE/kernel_workspace/bootimg_tmp/boot-source-kernelsu.img" >> $GITHUB_ENV
+            echo "SOURCE_KERNELSU_BOOTIMG_PATH=$GITHUB_WORKSPACE/kernel_workspace/bootimg_tmp/boot-source-kernelsu.img" >> $GITHUB_ENV
           fi
-        
+
       - name: 😎 Set build args
         id: generate-args
         env:
@@ -364,12 +364,12 @@ jobs:
             curl -LSs "${{ env.KERNELSU_INSTALLER }}" | bash -s ${{ env.KERNELSU_TAG }}
           fi
 
-          # if grep -q "CONFIG_KSU" arch/${{ env.ARCH }}/configs/${{ env.KERNEL_DEFCONFIG_PATH }}; then
-          #   sed -i 's/# CONFIG_KSU is not set/CONFIG_KSU=y/g' arch/${{ env.ARCH }}/configs/${{ env.KERNEL_DEFCONFIG_PATH }}
-          #   sed -i 's/CONFIG_KSU=n/CONFIG_KSU=y/g' arch/${{ env.ARCH }}/configs/${{ env.KERNEL_DEFCONFIG_PATH }}
-          # else
-          #     echo "CONFIG_KSU=y" >> arch/${{ env.ARCH }}/configs/${{ env.KERNEL_DEFCONFIG_PATH }}
-          # fi
+          if grep -q "CONFIG_KSU" arch/${{ env.ARCH }}/configs/${{ env.KERNEL_DEFCONFIG_PATH }}; then
+            sed -i 's/# CONFIG_KSU is not set/CONFIG_KSU=y/g' arch/${{ env.ARCH }}/configs/${{ env.KERNEL_DEFCONFIG_PATH }}
+            sed -i 's/CONFIG_KSU=n/CONFIG_KSU=y/g' arch/${{ env.ARCH }}/configs/${{ env.KERNEL_DEFCONFIG_PATH }}
+          else
+              echo "CONFIG_KSU=y" >> arch/${{ env.ARCH }}/configs/${{ env.KERNEL_DEFCONFIG_PATH }}
+          fi
 
           # if [ ${{ env.ENABLE_KP }} = true -a ${{ env.APPLY_KSU_PATCH }} != true ]; then
           #     echo "CONFIG_MODULES=y" >> arch/${{ env.ARCH }}/configs/${{ env.KERNEL_DEFCONFIG_PATH }}
