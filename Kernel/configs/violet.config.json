@@ -9,6 +9,7 @@
       "disable-lto": false,
       "disable-cc-werror": false,
       "release": false,
+      "remove-unused-packages": true,
       "debug": false
     },
 

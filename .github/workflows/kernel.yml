@@ -66,6 +66,7 @@ jobs:
       DISABLE_LTO: ${{ matrix.CONFIG.general.disable-lto }}
       DISABLE_CC_WERROR: ${{ matrix.CONFIG.general.disable-cc-werror }}
       RELEASE: ${{ matrix.CONFIG.general.release }}
+      REMOVE_UNUSED_PACKAGES: ${{ matrix.CONFIG.general.remove-unused-packages }}
       DEBUG: ${{ matrix.CONFIG.general.debug }}
 
       # Kernel source configuration
@@ -100,6 +101,19 @@ jobs:
       OUT_DIR: "$GITHUB_WORKSPACE/kernel_workspace/kernel_dir/out"
       CCACHE_DIR: "${{ github.workspace }}/ccache"
     steps:
+      # Remove unused packages
+      - name: ⭐ Remove unused packages
+        if: env.REMOVE_UNUSED_PACKAGES == 'true'
+        uses: jlumbroso/free-disk-space@main
+        with:
+          tool-cache: ture
+          android: false
+          dotnet: true
+          haskell: true
+          large-packages: true
+          docker-images: true
+          swap-storage: false
+
       # Set swap space
       - name: 📐 Set swap to 10G
         uses: pierotofy/set-swap-space@master
@@ -477,97 +491,6 @@ jobs:
           
           # tree ${{ env.OUT_DIR }}
 
-      - name: Setting up KernelSU boot image
-        if: env.MK_BOOT == 'true'
-        run: |
-          cd $GITHUB_WORKSPACE/kernel_workspace
-          chmod +x ./tools/magiskboot
-          cd bootimg_tmp
-          mkdir source kernelbuild
-          cd source
-          $GITHUB_WORKSPACE/kernel_workspace/tools/magiskboot unpack ${{env.SOURCE_KERNELSU_BOOTIMG_PATH}}
-          cd ..
-          cp -r ./source ./new
-          if [ ${{ env.KERNEL_IMAGE_NAME }} = Image.gz-dtb ]; then
-            cd $GITHUB_WORKSPACE/kernel_workspace/bootimg_tmp/kernelbuild
-            $GITHUB_WORKSPACE/kernel_workspace/tools/magiskboot split ${{ env.OUT_DIR }}/arch/${{ env.KERNEL_ARCH }}/boot/Image.gz-dtb
-            cp -rf kernel $GITHUB_WORKSPACE/kernel_workspace/bootimg_tmp/new/
-            cp -rf kernel_dtb $GITHUB_WORKSPACE/kernel_workspace/bootimg_tmp/new/
-            cd $GITHUB_WORKSPACE/kernel_workspace/bootimg_tmp/new/
-            $GITHUB_WORKSPACE/kernel_workspace/tools/magiskboot repack ${{env.SOURCE_KERNELSU_BOOTIMG_PATH}} $GITHUB_WORKSPACE/kernel_workspace/bootimg_tmp/boot-kernelsu.img
-          else
-            cd $GITHUB_WORKSPACE/kernel_workspace/bootimg_tmp/new/
-            cp -rf ${{ env.OUT_DIR }}/arch/${{ env.KERNEL_ARCH }}/boot/${{ env.KERNEL_IMAGE_NAME }} ./kernel
-            $GITHUB_WORKSPACE/kernel_workspace/tools/magiskboot repack ${{env.SOURCE_KERNELSU_BOOTIMG_PATH}} $GITHUB_WORKSPACE/kernel_workspace/bootimg_tmp/boot-kernelsu.img
-          fi
-  
-      - name: ⛑️ Pack things for debugging
-        if: ${{ env.DEBUG == 'true' }}
-        run: |
-          cd $GITHUB_WORKSPACE
-          tar czvf debug.tar .
-          xz -k debug.tar
-
-      - name: 💛 Upload Image
-        uses: actions/upload-artifact@v3
-        env:
-          ARCH: ${{ steps.generate-args.outputs.ARCH }}
-        with:
-          name: ${{ env.KERNEL_NAME }}-${{ env.BUILD_DATE }}-Image
-          path: ${{ env.OUT_DIR }}/arch/${{ env.ARCH }}/boot/Image
-          if-no-files-found: ignore
-          retention-days: 7
-
-      - name: 💙 Upload Image.gz
-        uses: actions/upload-artifact@v3
-        env:
-          ARCH: ${{ steps.generate-args.outputs.ARCH }}
-        with:
-          name: ${{ env.KERNEL_NAME }}-${{ env.BUILD_DATE }}-Image.gz
-          path: ${{ env.OUT_DIR }}/arch/${{ env.ARCH }}/boot/Image.gz
-          if-no-files-found: ignore
-          retention-days: 7
-
-      - name: 💙 Upload Image.gz-dtb
-        uses: actions/upload-artifact@v3
-        env:
-          ARCH: ${{ steps.generate-args.outputs.ARCH }}
-        with:
-          name: ${{ env.KERNEL_NAME }}-${{ env.BUILD_DATE }}-Image.gz-dtb
-          path: ${{ env.OUT_DIR }}/arch/${{ env.ARCH }}/boot/Image.gz-dtb
-          if-no-files-found: ignore
-          retention-days: 7
-
-      - name: 💜 Upload dtb
-        uses: actions/upload-artifact@v3
-        env:
-          ARCH: ${{ steps.generate-args.outputs.ARCH }}
-        with:
-          name: ${{ env.KERNEL_NAME }}-${{ env.BUILD_DATE }}-dtb
-          path: ${{ env.OUT_DIR }}/arch/${{ env.ARCH }}/boot/dtb
-          if-no-files-found: ignore
-          retention-days: 7
-
-      - name: ❤️ Upload dtbo.img
-        uses: actions/upload-artifact@v3
-        env:
-          ARCH: ${{ steps.generate-args.outputs.ARCH }}
-        if: ${{ env.NEED_DTBO == 'true' }}
-        with:
-          name: ${{ env.KERNEL_NAME }}-${{ env.BUILD_DATE }}-dtbo.img
-          path: ${{ env.OUT_DIR }}/arch/${{ env.ARCH }}/boot/dtbo.img
-          if-no-files-found: ignore
-          retention-days: 7
-
-      - name: ☢️ Upload output directory
-        uses: actions/upload-artifact@v3
-        env:
-          ARCH: ${{ steps.generate-args.outputs.ARCH }}
-        with:
-          name: ${{ env.KERNEL_NAME }}-${{ env.BUILD_DATE }}-Output
-          path: ${{ env.OUT_DIR }}/arch/${{ env.ARCH }}/boot/
-          retention-days: 7
-
       - name: ⏰ Pack Anykernel3
         if: ${{ env.ENABLE_ANYKERNEL3 == 'true' }}
         env:
@@ -607,10 +530,102 @@ jobs:
           cd AnyKernel3/
           zip -q -r "${{ env.ANYKERNEL3_FILE }}.zip" *
 
+
+      - name: Setting up KernelSU boot image
+        if: env.MK_BOOT == 'true'
+        run: |
+          cd $GITHUB_WORKSPACE/kernel_workspace
+          chmod +x ./tools/magiskboot
+          cd bootimg_tmp
+          mkdir source kernelbuild
+          cd source
+          $GITHUB_WORKSPACE/kernel_workspace/tools/magiskboot unpack ${{env.SOURCE_KERNELSU_BOOTIMG_PATH}}
+          cd ..
+          cp -r ./source ./new
+          if [ ${{ env.KERNEL_IMAGE_NAME }} = Image.gz-dtb ]; then
+            cd $GITHUB_WORKSPACE/kernel_workspace/bootimg_tmp/kernelbuild
+            $GITHUB_WORKSPACE/kernel_workspace/tools/magiskboot split ${{ env.OUT_DIR }}/arch/${{ env.KERNEL_ARCH }}/boot/Image.gz-dtb
+            cp -rf kernel $GITHUB_WORKSPACE/kernel_workspace/bootimg_tmp/new/
+            cp -rf kernel_dtb $GITHUB_WORKSPACE/kernel_workspace/bootimg_tmp/new/
+            cd $GITHUB_WORKSPACE/kernel_workspace/bootimg_tmp/new/
+            $GITHUB_WORKSPACE/kernel_workspace/tools/magiskboot repack ${{env.SOURCE_KERNELSU_BOOTIMG_PATH}} $GITHUB_WORKSPACE/kernel_workspace/bootimg_tmp/boot-kernelsu.img
+          else
+            cd $GITHUB_WORKSPACE/kernel_workspace/bootimg_tmp/new/
+            cp -rf ${{ env.OUT_DIR }}/arch/${{ env.KERNEL_ARCH }}/boot/${{ env.KERNEL_IMAGE_NAME }} ./kernel
+            $GITHUB_WORKSPACE/kernel_workspace/tools/magiskboot repack ${{env.SOURCE_KERNELSU_BOOTIMG_PATH}} $GITHUB_WORKSPACE/kernel_workspace/bootimg_tmp/boot-kernelsu.img
+          fi
+  
+      - name: ⛑️ Pack things for debugging
+        if: ${{ env.DEBUG == 'true' }}
+        run: |
+          cd $GITHUB_WORKSPACE
+          tar czvf debug.tar .
+          xz -k debug.tar
+
+      - name: 💛 Upload Image
+        uses: actions/upload-artifact@v4
+        env:
+          ARCH: ${{ steps.generate-args.outputs.ARCH }}
+        with:
+          name: ${{ env.KERNEL_NAME }}-${{ env.BUILD_DATE }}-Image
+          path: ${{ env.OUT_DIR }}/arch/${{ env.ARCH }}/boot/Image
+          if-no-files-found: ignore
+          retention-days: 7
+
+      - name: 💙 Upload Image.gz
+        uses: actions/upload-artifact@v4
+        env:
+          ARCH: ${{ steps.generate-args.outputs.ARCH }}
+        with:
+          name: ${{ env.KERNEL_NAME }}-${{ env.BUILD_DATE }}-Image.gz
+          path: ${{ env.OUT_DIR }}/arch/${{ env.ARCH }}/boot/Image.gz
+          if-no-files-found: ignore
+          retention-days: 7
+
+      - name: 💙 Upload Image.gz-dtb
+        uses: actions/upload-artifact@v4
+        env:
+          ARCH: ${{ steps.generate-args.outputs.ARCH }}
+        with:
+          name: ${{ env.KERNEL_NAME }}-${{ env.BUILD_DATE }}-Image.gz-dtb
+          path: ${{ env.OUT_DIR }}/arch/${{ env.ARCH }}/boot/Image.gz-dtb
+          if-no-files-found: ignore
+          retention-days: 7
+
+      - name: 💜 Upload dtb
+        uses: actions/upload-artifact@v4
+        env:
+          ARCH: ${{ steps.generate-args.outputs.ARCH }}
+        with:
+          name: ${{ env.KERNEL_NAME }}-${{ env.BUILD_DATE }}-dtb
+          path: ${{ env.OUT_DIR }}/arch/${{ env.ARCH }}/boot/dtb
+          if-no-files-found: ignore
+          retention-days: 7
+
+      - name: ❤️ Upload dtbo.img
+        uses: actions/upload-artifact@v4
+        env:
+          ARCH: ${{ steps.generate-args.outputs.ARCH }}
+        if: ${{ env.NEED_DTBO == 'true' }}
+        with:
+          name: ${{ env.KERNEL_NAME }}-${{ env.BUILD_DATE }}-dtbo.img
+          path: ${{ env.OUT_DIR }}/arch/${{ env.ARCH }}/boot/dtbo.img
+          if-no-files-found: ignore
+          retention-days: 7
+
+      - name: ☢️ Upload output directory
+        uses: actions/upload-artifact@v4
+        env:
+          ARCH: ${{ steps.generate-args.outputs.ARCH }}
+        with:
+          name: ${{ env.KERNEL_NAME }}-${{ env.BUILD_DATE }}-Output
+          path: ${{ env.OUT_DIR }}/arch/${{ env.ARCH }}/boot/
+          retention-days: 7
+
       - name: "💾 Upload AnyKernel3 image => (${{ env.BUILD_DATE }})"
         env:
           ANYKERNEL3_FILE: "AnyKernel3-${{ env.KERNEL_NAME }}-${{ env.BUILD_DATE }}"
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         if: ${{ env.USE_ANYKERNEL3 == 'true' }}
         with:
           name: "${{ env.ANYKERNEL3_FILE }}"
@@ -619,7 +634,7 @@ jobs:
       - name: "💿 Upload boot image => (${{ env.BUILD_DATE }})"
         env:
           BOOTIMG_FILE: "Boot-${{ env.KERNEL_NAME }}-${{ env.BUILD_DATE }}"
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         if: ${{ env.MK_BOOT == 'true' }}
         with:
           name: "${{ env.BOOTIMG_FILE }}"
@@ -628,7 +643,7 @@ jobs:
       - name: "⛑️ Upload things for debugging => (${{ env.BUILD_DATE }})"
         env:
           DEBUG_FILE: "Debug-${{ env.KERNEL_NAME }}-${{ env.BUILD_DATE }}"
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         if: ${{ env.DEBUG == 'true' }}
         with:
           name: "${{ env.DEBUG_FILE }}"
