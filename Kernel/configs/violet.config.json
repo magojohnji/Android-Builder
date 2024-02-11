@@ -4,7 +4,7 @@
       "name": "violet",
       "build-host": "GitHub-Action",
       "builder-name": "magojohnji",
-      "enableKprobes": true,
+      "enableKprobes": false,
       "enableOverlayFS": true,
       "disable-lto": false,
       "disable-cc-werror": false,
