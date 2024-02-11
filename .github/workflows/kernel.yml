@@ -166,7 +166,7 @@ jobs:
           echo "🤔 There is $patches_num defined toolchains."
 
           for patch in $(echo "$patches" | jq -r 'keys[]'); do
-            patch_path=$(echo "$patches" | jq -r ".[$patch].path")
+            patch_path=$(echo "$patches" | jq -r ".$patch.path")
 
             git apply $patch_path
 

@@ -23,7 +23,7 @@
       },
 
       "patches": {
-        "dsp-hook": {
+        "dsp_hook": {
           "path": "./dsp-hook.patch"
         }
       }
