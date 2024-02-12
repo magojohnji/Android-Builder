@@ -433,7 +433,7 @@ jobs:
             export KBUILD_BUILD_USER=${{ env.BUILDER }}
           fi
 
-          make ${{ env.KERNEL_DEFCONFIG_PATH }} O=out CC=clang
+          make arch=arm64 ${{ env.KERNEL_DEFCONFIG_PATH }} O=out CC=clang
           make ${{ env.ARGS }}
           
           tree ${{ env.OUT_DIR }}/arch/${{ env.KERNEL_ARCH }}/boot/
