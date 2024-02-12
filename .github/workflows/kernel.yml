@@ -496,11 +496,14 @@ jobs:
             cp -rf ${{ env.OUT_DIR }}/arch/${{ env.KERNEL_ARCH }}/boot/${{ env.KERNEL_IMAGE }} ./kernel
             $GITHUB_WORKSPACE/kernel_workspace/tools/magiskboot repack ${{env.SOURCE_KERNELSU_BOOTIMG_PATH}} $GITHUB_WORKSPACE/kernel_workspace/bootimg_tmp/boot-kernelsu.img
           fi
-
+      
+      - name: Test
+        run: tree ${{ env.OUT_DIR }}/arch/${{ env.KERNEL_ARCH }}/boot/
+      
       - name: 💙 Upload kernel image
         uses: actions/upload-artifact@v4
         env:
-          ARCH: ${{ steps.generate-args.outputs.ARCH }}
+          ARCH: ${{ steps.generate-args.outputs.KERNEL_ARCH }}
         with:
           name: ${{ env.KERNEL_NAME }}-${{ env.BUILD_DATE }}-${{ env.KERNEL_IMAGE }}
           path: ${{ env.OUT_DIR }}/arch/${{ env.KERNEL_ARCH}}/boot/${{ env.KERNEL_IMAGE }}
