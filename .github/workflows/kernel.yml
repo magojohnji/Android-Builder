@@ -133,11 +133,6 @@ jobs:
           sudo apt install -y tar bzip2 gzip unzip p7zip-full lzip lzma rar unrar cabextract lhasa arj nomarch zpaq brotli sharutils unace xz-utils unalz 
           mv $GITHUB_WORKSPACE/Scripts/Extract.sh $GITHUB_WORKSPACE/kernel_workspace/tools/Extract.sh
 
-      - name: Set up Python 2
-        uses: actions/setup-python@v5
-        with:
-          python-version: "2.x"
-
       - name: Set up Python 3
         uses: actions/setup-python@v5
         with:
