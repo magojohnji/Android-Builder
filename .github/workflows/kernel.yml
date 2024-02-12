@@ -428,7 +428,7 @@ jobs:
             export KBUILD_BUILD_USER=${{ env.BUILDER }}
           fi
 
-          make O=out ${{ env.KERNEL_DEFCONFIG_PATH }}
+          make ${{ env.ARGS }} ${{ env.KERNEL_DEFCONFIG_PATH }}
           make ${{ env.ARGS }}
           
           tree ${{ env.OUT_DIR }}/arch/${{ env.KERNEL_ARCH }}/boot/
