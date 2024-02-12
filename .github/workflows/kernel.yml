@@ -123,7 +123,7 @@ jobs:
         run: |
           mkdir -p $GITHUB_WORKSPACE/kernel_workspace/tools
           sudo apt update
-          sudo apt install -y curl git ftp lftp wget aria2 libarchive-tools ccache python2 python2-dev python3
+          sudo apt install -y curl git ftp lftp wget aria2 libarchive-tools ccache
           sudo apt install -y pngcrush schedtool dpkg-dev liblz4-tool make optipng maven device-tree-compiler 
           sudo apt install -y libc6-dev-i386 lib32ncurses5-dev libx11-dev lib32z-dev libgl1-mesa-dev xsltproc
           sudo apt install -y libxml2-utils libbz2-dev libbz2-1.0 libghc-bzlib-dev squashfs-tools lzop flex tree
@@ -132,6 +132,16 @@ jobs:
           sudo apt install -y llvm g++-multilib bison gperf zlib1g-dev automake
           sudo apt install -y tar bzip2 gzip unzip p7zip-full lzip lzma rar unrar cabextract lhasa arj nomarch zpaq brotli sharutils unace xz-utils unalz 
           mv $GITHUB_WORKSPACE/Scripts/Extract.sh $GITHUB_WORKSPACE/kernel_workspace/tools/Extract.sh
+
+      - name: Set up Python 2
+        uses: actions/setup-python@v5
+        with:
+          python-version: "2.x"
+
+      - name: Set up Python 3
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.x"
 
       # Set device name.
       - name: ⏰ Set device name
@@ -441,7 +451,7 @@ jobs:
           ANYKERNEL3_FILE: "${{ env.WORKSPACE }}/AnyKernel3-${{ env.KERNEL_NAME }}-${{ env.BUILD_DATE }}"
         run: |
           cd $GITHUB_WORKSPACE/kernel_workspace/
-          if [ ${{ env.AK3_LINK }} = '' ]; then
+          if [ '${{ env.AK3_LINK }}' = '' ]; then
             git clone --recursive --depth=1 -j $(nproc) https://github.com/osm0sis/AnyKernel3 AnyKernel3
             sed -i 's/do.devicecheck=1/do.devicecheck=0/g' AnyKernel3/anykernel.sh
             sed -i 's!block=/dev/block/platform/omap/omap_hsmmc.0/by-name/boot;!block=auto;!g' AnyKernel3/anykernel.sh
