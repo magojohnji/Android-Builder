@@ -512,7 +512,7 @@ jobs:
           ARCH: ${{ steps.generate-args.outputs.KERNEL_ARCH }}
         with:
           name: ${{ env.KERNEL_NAME }}-${{ env.BUILD_DATE }}-${{ env.KERNEL_IMAGE }}
-          path: /home/runner/work/Android-Builder/Android-Builder/kernel_workspace/kernel_dir/out/arch/arm64/boot/Image.gz
+          path: /home/runner/work/Android-Builder/Android-Builder/kernel_workspace/kernel_dir/out/arch/arm64/boot/${{ env.KERNEL_IMAGE }}
           if-no-files-found: ignore
           retention-days: 7
 
@@ -543,7 +543,7 @@ jobs:
         if: ${{ env.ENABLE_ANYKERNEL3 == 'true' }}
         with:
           name: "${{ env.ANYKERNEL3_FILE }}"
-          path: $GITHUB_WORKSPACE/kernel_workspace/AnyKernel3/${{ env.ANYKERNEL3_FILE }}.zip
+          path: /home/runner/work/Android-Builder/Android-Builder/kernel_workspace/AnyKernel3/${{ env.ANYKERNEL3_FILE }}.zip
 
       - name: "💿 Upload boot image => (${{ env.BUILD_DATE }})"
         env:
