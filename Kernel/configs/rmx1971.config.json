@@ -39,6 +39,13 @@
   
       "toolchains": [
         {
+            "repo": "https://github.com/kdrag0n/proton-clang.git",
+            "branch": "master",
+            "name": "clang",
+            "binaryEnv":[
+              "bin"]
+        },
+        {
           "url": "https://android.googlesource.com/platform/prebuilts/gcc/linux-x86/aarch64/aarch64-linux-android-4.9/+archive/refs/tags/android-12.1.0_r27.tar.gz",
           "name": "gcc-64",
           "binaryEnv":[
@@ -59,6 +66,7 @@
       "params": {
         "CC": "clang",
         "externalCommands": {
+          "CLANG_TRIPLE": "aarch64-linux-gnu-",
           "CROSS_COMPILE": "aarch64-linux-android-",
           "CROSS_COMPILE_ARM32": "arm-linux-androideabi-"
         }

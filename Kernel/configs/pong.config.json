@@ -16,7 +16,7 @@
         "basic": {
           "link": "https://github.com/Nothing-phone-2-Development/android_kernel_nothing_sm8475.git",
           "branch": "lineage-21",
-          "defconfig": "vendor/nothing/waipio_GKI.config",
+          "defconfig": "vendor/waipio_GKI.config",
           "arch": "arm64",
           "image": "Image.gz",
           "need-dtbo": true
