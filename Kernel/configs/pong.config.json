@@ -1,0 +1,67 @@
+[
+    {
+      "general":{
+        "name": "pong",
+        "build-host": "GitHub-Action",
+        "builder-name": "magojohnji",
+        "enableKprobes": true,
+        "enableOverlayFS": true,
+        "disable-lto": false,
+        "disable-cc-werror": false,
+        "release": true,
+        "remove-unused-packages": true
+      },
+  
+      "kernel": {
+        "basic": {
+          "link": "https://github.com/Nothing-phone-2-Development/android_kernel_nothing_sm8475.git",
+          "branch": "lineage-21",
+          "defconfig": "vendor/nothing/waipio_GKI.config",
+          "arch": "arm64",
+          "image": "Image.gz",
+          "need-dtbo": true
+        },
+  
+        "patches": {
+        }
+      },
+  
+      "withKernelSU": {
+        "enable": true,
+        "installer": "https://github.com/magojohnji/KernelSU/raw/main/kernel/setup.sh",
+        "tag": "",
+        "apply-patch": false,
+        "ksu_expected_size": "",
+        "ksu_expected_hash": "",
+        "make_bootimg": false,
+        "bootimg_link": ""
+      },
+  
+      "toolchains": [
+        {
+          "url": "https://android.googlesource.com/platform/prebuilts/clang/host/linux-x86/+archive/refs/heads/master/clang-r510928.tar.gz",
+          "name": "clang",
+          "binaryEnv":[
+            "bin"]
+        }
+      ],
+  
+      "ccache": true,
+  
+      "enableLXC": false,
+  
+      "params": {
+        "CC": "clang",
+        "externalCommands": {
+          "CROSS_COMPILE": "aarch64-linux-gnu-"
+        }
+      },
+  
+      "AnyKernel3": {
+        "enable": true,
+        "link": "",
+        "branch": ""
+      }
+    }
+  ]
+  
