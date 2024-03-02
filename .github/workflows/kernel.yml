@@ -54,9 +54,9 @@ jobs:
       # General configuration
       KERNEL_NAME: ${{ matrix.CONFIG.general.name }}
       BUILD_HOST: ${{ matrix.CONFIG.general.build-host }}
-      BUILDER: ${{ matrix.CONFIG.general.builder-name }}
-      ENABLE_KP: ${{ matrix.CONFIG.general.enableKprobes }}
-      ENABLE_OFS: ${{ matrix.CONFIG.general.enableOverlayFS }}
+      BUILD_USER: ${{ matrix.CONFIG.general.builder-name }}
+      ENABLE_KPROBES: ${{ matrix.CONFIG.general.enableKprobes }}
+      ENABLE_OVERLAY_FS: ${{ matrix.CONFIG.general.enableOverlayFS }}
       DISABLE_LTO: ${{ matrix.CONFIG.general.disable-lto }}
       DISABLE_CC_WERROR: ${{ matrix.CONFIG.general.disable-cc-werror }}
       RELEASE: ${{ matrix.CONFIG.general.release }}
@@ -67,17 +67,17 @@ jobs:
       KERNEL_BRANCH: ${{ matrix.CONFIG.kernel.basic.branch }}
       KERNEL_DEFCONFIG_PATH: ${{ matrix.CONFIG.kernel.basic.defconfig }}
       KERNEL_ARCH: ${{ matrix.CONFIG.kernel.basic.arch }}
-      KERNEL_IMAGE: ${{ matrix.CONFIG.kernel.basic.image }}
+      KERNEL_IMAGE_NAME: ${{ matrix.CONFIG.kernel.basic.image }}
       NEED_DTBO: ${{ matrix.CONFIG.kernel.basic.need-dtbo }}
 
       # KernelSU configuration
       ENABLE_KERNELSU: ${{ matrix.CONFIG.withKernelSU.enable }}
-      KERNELSU_INSTALLER: ${{ matrix.CONFIG.withKernelSU.installer }}
-      KERNELSU_TAG: ${{ matrix.CONFIG.withKernelSU.tag }}
-      APPLY_KSU_PATCH: ${{ matrix.CONFIG.withKernelSU.apply-patch }}
-      KSU_EXPECTED_SIZE: ${{ matrix.CONFIG.withKernelSU.ksu_expected_size }}
-      KSU_EXPECTED_HASH: ${{ matrix.CONFIG.withKernelSU.ksu_expected_hash }}
-      MK_BOOT: ${{ matrix.CONFIG.withKernelSU.make_bootimg }}
+      KERNELSU_INSTALLER_LINK: ${{ matrix.CONFIG.withKernelSU.installer }}
+      KERNELSU_TAG_NAME: ${{ matrix.CONFIG.withKernelSU.tag }}
+      APPLY_KERNELSU_PATCH: ${{ matrix.CONFIG.withKernelSU.apply-patch }}
+      KERNELSU_MANAGER_SIGNATURE_EXPECTED_SIZE: ${{ matrix.CONFIG.withKernelSU.ksu_expected_size }}
+      KERNELSU_MANAGER_SIGNATURE_EXPECTED_HASH: ${{ matrix.CONFIG.withKernelSU.ksu_expected_hash }}
+      WHETEHR_MAKE_BOOT: ${{ matrix.CONFIG.withKernelSU.make_bootimg }}
       BOOTIMG_LINK: ${{ matrix.CONFIG.withKernelSU.bootimg_link }}
 
       # Whether to enable LXC docker
@@ -88,8 +88,8 @@ jobs:
 
       # AnyKernel3 configuration
       ENABLE_ANYKERNEL3: ${{ matrix.CONFIG.AnyKernel3.enable }}
-      AK3_LINK: ${{ matrix.CONFIG.AnyKernel3.link }}
-      AK3_BRANCH: ${{ matrix.CONFIG.AnyKernel3.branch }}
+      ANYKERNEL3_LINK: ${{ matrix.CONFIG.AnyKernel3.link }}
+      ANYKERNEL3_BRANCH: ${{ matrix.CONFIG.AnyKernel3.branch }}
 
       # Set output & ccache directory
       OUT_DIR: "$GITHUB_WORKSPACE/kernel_workspace/kernel_dir/out"
@@ -260,7 +260,7 @@ jobs:
           done
 
       - name: 😉 Download magiskboot for linux
-        if: env.MK_BOOT == 'true'
+        if: env.WHETEHR_MAKE_BOOT == 'true'
         run: |
           cd $GITHUB_WORKSPACE/kernel_workspace
           git clone --recurse-submodules https://github.com/magojohnji/magiskboot-linux.git magiskboot
@@ -270,7 +270,7 @@ jobs:
           rm -rf magiskboot
 
       - name: 😁 Download source boot image
-        if: env.MK_BOOT == 'true'
+        if: env.WHETEHR_MAKE_BOOT == 'true'
         run: |
           cd $GITHUB_WORKSPACE/kernel_workspace
           mkdir bootimg_tmp
@@ -331,10 +331,10 @@ jobs:
             rm -rf "./drivers/kernelsu"
           fi
 
-          if [ ${{ env.KERNELSU_TAG }} = '' ]; then
-            curl -LSs "${{ env.KERNELSU_INSTALLER }}" | bash -
+          if [ ${{ env.KERNELSU_TAG_NAME }} = '' ]; then
+            curl -LSs "${{ env.KERNELSU_INSTALLER_LINK }}" | bash -
           else
-            curl -LSs "${{ env.KERNELSU_INSTALLER }}" | bash -s ${{ env.KERNELSU_TAG }}
+            curl -LSs "${{ env.KERNELSU_INSTALLER_LINK }}" | bash -s ${{ env.KERNELSU_TAG_NAME }}
           fi
 
           if grep -q "CONFIG_KSU" arch/${{ env.KERNEL_ARCH }}/configs/${{ env.KERNEL_DEFCONFIG_PATH }}; then
@@ -344,14 +344,14 @@ jobs:
               echo "CONFIG_KSU=y" >> arch/${{ env.KERNEL_ARCH }}/configs/${{ env.KERNEL_DEFCONFIG_PATH }}
           fi
 
-          if [ ${{ env.ENABLE_KP }} = true -a ${{ env.APPLY_KSU_PATCH }} != true ]; then
+          if [ ${{ env.ENABLE_KPROBES }} = true -a ${{ env.APPLY_KERNELSU_PATCH }} != true ]; then
               echo "CONFIG_MODULES=y" >> arch/${{ env.KERNEL_ARCH }}/configs/${{ env.KERNEL_DEFCONFIG_PATH }}
               echo "CONFIG_KPROBES=y" >> arch/${{ env.KERNEL_ARCH }}/configs/${{ env.KERNEL_DEFCONFIG_PATH }}
               echo "CONFIG_HAVE_KPROBES=y" >> arch/${{ env.KERNEL_ARCH }}/configs/${{ env.KERNEL_DEFCONFIG_PATH }}
               echo "CONFIG_KPROBE_EVENTS=y" >> arch/${{ env.KERNEL_ARCH }}/configs/${{ env.KERNEL_DEFCONFIG_PATH }}
           fi
 
-          if [ ${{ env.ENABLE_OFS }} = true ]; then
+          if [ ${{ env.ENABLE_OVERLAY_FS }} = true ]; then
               echo "CONFIG_OVERLAY_FS=y" >> arch/${{ env.KERNEL_ARCH }}/configs/${{ env.KERNEL_DEFCONFIG_PATH }}
           fi
 
@@ -367,7 +367,7 @@ jobs:
           fi
   
       - name: 😋 Apply KernelSU patch
-        if: ${{ env.APPLY_KSU_PATCH == 'true' }}
+        if: ${{ env.APPLY_KERNELSU_PATCH == 'true' }}
         run: |
             cd $GITHUB_WORKSPACE/kernel_workspace/kernel_dir
             git apply KernelSU-hook.patch
@@ -422,16 +422,16 @@ jobs:
         run: |
           cd $GITHUB_WORKSPACE/kernel_workspace/kernel_dir
           echo "🤔 PATH Variable: $PATH"
-          if [ ! -z ${{ env.KSU_EXPECTED_SIZE }} ] && [ ! -z ${{ env.KSU_EXPECTED_HASH }} ]; then
-            export KSU_EXPECTED_SIZE=${{ env.KSU_EXPECTED_SIZE }}
-            export KSU_EXPECTED_HASH=${{ env.KSU_EXPECTED_HASH }}
+          if [ ! -z ${{ env.KERNELSU_MANAGER_SIGNATURE_EXPECTED_SIZE }} ] && [ ! -z ${{ env.KERNELSU_MANAGER_SIGNATURE_EXPECTED_HASH }} ]; then
+            export KSU_EXPECTED_SIZE=${{ env.KERNELSU_MANAGER_SIGNATURE_EXPECTED_SIZE }}
+            export KSU_EXPECTED_HASH=${{ env.KERNELSU_MANAGER_SIGNATURE_EXPECTED_HASH }}
           fi
 
           export KBUILD_BUILD_HOST=${{ env.BUILD_HOST }}
-          if [ ${{ env.BUILDER }} = "" ]; then
+          if [ ${{ env.BUILD_USER }} = "" ]; then
             export KBUILD_BUILD_USER=$(echo ${{ github.actor }} | tr A-Z a-z)
           else
-            export KBUILD_BUILD_USER=${{ env.BUILDER }}
+            export KBUILD_BUILD_USER=${{ env.BUILD_USER }}
           fi
 
           make ARCH=arm64 ${{ env.KERNEL_DEFCONFIG_PATH }} O=out CC=clang
@@ -447,14 +447,14 @@ jobs:
           ANYKERNEL3_FILE: "${{ env.WORKSPACE }}/AnyKernel3-${{ env.KERNEL_NAME }}-${{ env.BUILD_DATE }}"
         run: |
           cd $GITHUB_WORKSPACE/kernel_workspace/
-          if [ '${{ env.AK3_LINK }}' = '' ]; then
+          if [ '${{ env.ANYKERNEL3_LINK }}' = '' ]; then
             git clone --recursive --depth=1 -j $(nproc) https://github.com/osm0sis/AnyKernel3 AnyKernel3
             sed -i 's/do.devicecheck=1/do.devicecheck=0/g' AnyKernel3/anykernel.sh
             sed -i 's!block=/dev/block/platform/omap/omap_hsmmc.0/by-name/boot;!block=auto;!g' AnyKernel3/anykernel.sh
             sed -i 's/is_slot_device=0;/is_slot_device=auto;/g' AnyKernel3/anykernel.sh
             echo "🤔 Use origin Anykernel3 => (https://github.com/osm0sis/AnyKernel3)"
           else
-            git clone --recursive --depth=1 -j $(nproc) --branch ${{ env.AK3_BRANCH }} ${{ env.AK3_LINK }} AnyKernel3
+            git clone --recursive --depth=1 -j $(nproc) --branch ${{ env.ANYKERNEL3_BRANCH }} ${{ env.ANYKERNEL3_LINK }} AnyKernel3
             echo "🤔 Use custom AnyKernel3 => (${{ env.AK3_LINK }})"
           fi
 
@@ -480,7 +480,7 @@ jobs:
           zip -q -r "${{ env.ANYKERNEL3_FILE }}.zip" *
 
       - name: Setting up KernelSU boot image
-        if: env.MK_BOOT == 'true'
+        if: env.WHETEHR_MAKE_BOOT == 'true'
         run: |
           cd $GITHUB_WORKSPACE/kernel_workspace
           chmod +x ./tools/magiskboot
@@ -490,7 +490,7 @@ jobs:
           $GITHUB_WORKSPACE/kernel_workspace/tools/magiskboot unpack ${{env.SOURCE_KERNELSU_BOOTIMG_PATH}}
           cd ..
           cp -r ./source ./new
-          if [ ${{ env.KERNEL_IMAGE }} = Image.gz-dtb ]; then
+          if [ ${{ env.KERNEL_IMAGE_NAME }} = Image.gz-dtb ]; then
             cd $GITHUB_WORKSPACE/kernel_workspace/bootimg_tmp/kernelbuild
             $GITHUB_WORKSPACE/kernel_workspace/tools/magiskboot split ${{ env.OUT_DIR }}/arch/${{ env.KERNEL_ARCH }}/boot/Image.gz-dtb
             cp -rf kernel $GITHUB_WORKSPACE/kernel_workspace/bootimg_tmp/new/
@@ -499,20 +499,23 @@ jobs:
             $GITHUB_WORKSPACE/kernel_workspace/tools/magiskboot repack ${{env.SOURCE_KERNELSU_BOOTIMG_PATH}} $GITHUB_WORKSPACE/kernel_workspace/bootimg_tmp/boot-kernelsu.img
           else
             cd $GITHUB_WORKSPACE/kernel_workspace/bootimg_tmp/new/
-            cp -rf ${{ env.OUT_DIR }}/arch/${{ env.KERNEL_ARCH }}/boot/${{ env.KERNEL_IMAGE }} ./kernel
+            cp -rf ${{ env.OUT_DIR }}/arch/${{ env.KERNEL_ARCH }}/boot/${{ env.KERNEL_IMAGE_NAME }} ./kernel
             $GITHUB_WORKSPACE/kernel_workspace/tools/magiskboot repack ${{env.SOURCE_KERNELSU_BOOTIMG_PATH}} $GITHUB_WORKSPACE/kernel_workspace/bootimg_tmp/boot-kernelsu.img
           fi
       
       - name: Test
-        run: tree ${{ env.OUT_DIR }}/arch/${{ env.KERNEL_ARCH }}/boot/
+        run: |
+          tree ${{ env.OUT_DIR }}/arch/${{ env.KERNEL_ARCH }}/boot/
+          ls $GITHUB_WORKSPACE
+          ls ${{ github.workspace }}
       
       - name: 💙 Upload kernel image
         uses: actions/upload-artifact@v4
         env:
           ARCH: ${{ steps.generate-args.outputs.KERNEL_ARCH }}
         with:
-          name: ${{ env.KERNEL_NAME }}-${{ env.BUILD_DATE }}-${{ env.KERNEL_IMAGE }}
-          path: /home/runner/work/Android-Builder/Android-Builder/kernel_workspace/kernel_dir/out/arch/arm64/boot/${{ env.KERNEL_IMAGE }}
+          name: ${{ env.KERNEL_NAME }}-${{ env.BUILD_DATE }}-${{ env.KERNEL_IMAGE_NAME }}
+          path: /home/runner/work/Android-Builder/Android-Builder/kernel_workspace/kernel_dir/out/arch/arm64/boot/${{ env.KERNEL_IMAGE_NAME }}
           if-no-files-found: ignore
           retention-days: 7
 
@@ -549,7 +552,7 @@ jobs:
         env:
           BOOTIMG_FILE: "Boot-${{ env.KERNEL_NAME }}-${{ env.BUILD_DATE }}"
         uses: actions/upload-artifact@v4
-        if: ${{ env.MK_BOOT == 'true' }}
+        if: ${{ env.WHETEHR_MAKE_BOOT == 'true' }}
         with:
           name: "${{ env.BOOTIMG_FILE }}"
           path: $GITHUB_WORKSPACE/kernel_workspace/bootimg_tmp/boot-kernelsu.img
