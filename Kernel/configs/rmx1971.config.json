@@ -1,7 +1,7 @@
 [
     {
       "general":{
-        "name": "mondrian",
+        "name": "rmx1971",
         "build-host": "GitHub-Action",
         "builder-name": "magojohnji",
         "enableKprobes": true,
@@ -14,16 +14,15 @@
   
       "kernel": {
         "basic": {
-          "link": "https://github.com/magojohnji/android_kernel_xiaomi_sm8475.git",
-          "branch": "staging",
-          "defconfig": "vendor/mondrian_defconfig",
+          "link": "https://github.com/kaderbava/android_kernel_realme_sdm710.git",
+          "branch": "14-r5p",
+          "defconfig": "sdm670-perf_defconfig",
           "arch": "arm64",
-          "image": "Image.gz",
+          "image": "Image.gz-dtb",
           "need-dtbo": true
         },
   
         "patches": {
-
         }
       },
   
@@ -40,7 +39,7 @@
   
       "toolchains": [
         {
-          "url": "https://github.com/ZyCromerZ/Clang/releases/download/19.0.0git-20240302-release/Clang-19.0.0git-20240302.tar.gz",
+          "url": "https://android.googlesource.com/platform/prebuilts/clang/host/linux-x86/+archive/refs/heads/master/clang-r510928.tar.gz",
           "name": "clang",
           "binaryEnv":[
             "bin"]
@@ -54,15 +53,12 @@
       "params": {
         "CC": "clang",
         "externalCommands": {
-          "CXX": "clang++",
-          "CROSS_COMPILE": "aarch64-linux-gnu-",
-          "CROSS_COMPILE_ARM32": "arm-linux-gnueabi-",
-          "LD": "ld.lld"
+          "CROSS_COMPILE": "aarch64-linux-gnu-"
         }
       },
   
       "AnyKernel3": {
-        "enable": true,
+        "enable": false,
         "link": "",
         "branch": ""
       }

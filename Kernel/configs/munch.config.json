@@ -14,7 +14,7 @@
   
       "kernel": {
         "basic": {
-          "link": "https://github.com/magojohnji/Realking_kernel_sm8250.git",
+          "link": "https://github.com/Rohail33/Realking_kernel_sm8250.git",
           "branch": "munch",
           "defconfig": "munch_defconfig",
           "arch": "arm64",
@@ -40,10 +40,26 @@
   
       "toolchains": [
         {
-          "url": "https://github.com/ZyCromerZ/Clang/releases/download/18.0.0-20230901-release/Clang-18.0.0-20230901.tar.gz",
+          "url": "https://github.com/ZyCromerZ/Clang/releases/download/19.0.0git-20240302-release/Clang-19.0.0git-20240302.tar.gz",
           "name": "clang",
           "binaryEnv":[
             "bin"]
+        },
+        {
+          "repo": "https://github.com/LineageOS/android_prebuilts_gcc_linux-x86_aarch64_aarch64-linux-android-4.9",
+          "branch": "lineage-19.1",
+          "name": "aarch64",
+          "binaryEnv": [
+            "bin"
+          ]
+        },
+        {
+          "repo": "https://github.com/LineageOS/android_prebuilts_gcc_linux-x86_arm_arm-linux-androideabi-4.9",
+          "branch": "lineage-19.1",
+          "name": "arm",
+          "binaryEnv": [
+            "bin"
+          ]
         }
       ],
   
@@ -54,10 +70,21 @@
       "params": {
         "CC": "clang",
         "externalCommands": {
-          "CROSS_COMPILE": "aarch64-linux-gnu-",
+          "CLANG_TRIPLE": "aarch64-linux-gnu-",
+          "CROSS_COMPILE": "aarch64-linux-android-",
+          "CROSS_COMPILE_ARM32": "arm-linux-androideabi-",
+          "LD": "ld.lld",
+          "AR": "llvm-ar",
           "NM": "llvm-nm",
+          "OBJCOPY": "llvm-objcopy",
           "OBJDUMP": "llvm-objdump",
-          "STRIP": "llvm-strip"
+          "READELF": "llvm-readelf",
+          "OBJSIZE": "llvm-size",
+          "STRIP": "llvm-strip",
+          "LDGOLD": "aarch64-linux-gnu-ld.gold",
+          "LLVM_AR": "llvm-ar",
+          "LLVM_DIS": "llvm-dis",
+          "CONFIG_THINLTO": ""
         }
       },
   
