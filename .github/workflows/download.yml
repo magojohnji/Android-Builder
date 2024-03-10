@@ -33,10 +33,10 @@ jobs:
       - name: Run a multi-line script
         run: |
           echo Add other actions to build,
-          sudo apt install aira2
+          sudo apt install aria2
           mkdir a
           cd a
-          aira2c https://jaist.dl.sourceforge.net/project/evolution-x/violet/14/evolution_violet-ota-uq1a.240205.004-03021653-OFFICIAL-signed.zip
+          aria2c https://jaist.dl.sourceforge.net/project/evolution-x/violet/14/evolution_violet-ota-uq1a.240205.004-03021653-OFFICIAL-signed.zip
 
       - name: Upload
         uses: actions/upload-artifact@v4
