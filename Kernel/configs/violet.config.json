@@ -39,7 +39,7 @@
 
     "toolchains": [
       {
-        "url": "https://android.googlesource.com/platform/prebuilts/clang/host/linux-x86/+archive/refs/heads/master/clang-r510928.tar.gz",
+        "url": "https://github.com/ZyCromerZ/Clang/releases/download/19.0.0git-20240317-release/Clang-19.0.0git-20240317.tar.gz",
         "name": "clang",
         "binaryEnv":[
           "bin"]
