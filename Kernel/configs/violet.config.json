@@ -39,24 +39,8 @@
 
     "toolchains": [
       {
-        "url": "https://github.com/ZyCromerZ/Clang/releases/download/19.0.0git-20240317-release/Clang-19.0.0git-20240317.tar.gz",
+        "url": "https://android.googlesource.com/platform/prebuilts/clang/host/linux-x86/+archive/refs/heads/master/clang-r522817.tar.gz",
         "name": "clang",
-        "binaryEnv":[
-          "bin"]
-      },
-
-      {
-        "repo": "https://github.com/fiqri19102002/arm-gcc.git",
-        "branch": "release/elf-12",
-        "name": "gcc-32",
-        "binaryEnv":[
-          "bin"]
-      },
-
-      {
-        "repo": "https://github.com/fiqri19102002/aarch64-gcc.git",
-        "branch": "release/elf-12",
-        "name": "gcc-64",
         "binaryEnv":[
           "bin"]
       }
