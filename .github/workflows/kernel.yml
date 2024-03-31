@@ -524,7 +524,7 @@ jobs:
         if: ${{ env.NEED_DTBO == 'true' }}
         with:
           name: ${{ env.KERNEL_NAME }}-${{ env.BUILD_DATE }}-dtbo.img
-          path: ${{ env.OUT_DIR }}/arch/${{ env.KERNEL_ARCH }}/boot/dtbo.img
+          path: ${{ github.workspace }}/kernel_workspace/kernel_dir/out/arch/${{ env.KERNEL_ARCH }}/boot/dtbo.img
           if-no-files-found: ignore
           retention-days: 7
 
@@ -544,7 +544,7 @@ jobs:
         if: ${{ env.WHETEHR_MAKE_BOOT == 'true' }}
         with:
           name: "${{ env.BOOTIMG_FILE }}"
-          path: $GITHUB_WORKSPACE/kernel_workspace/bootimg_tmp/boot-kernelsu.img
+          path: ${{ github.workspace }}/kernel_workspace/bootimg_tmp/boot-kernelsu.img
 
       - name: Create GitHub Release => (${{ env.BUILD_DATE }})
         continue-on-error: true
