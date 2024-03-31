@@ -27,7 +27,7 @@
     },
 
     "withKernelSU": {
-      "enable": true,
+      "enable": false,
       "installer": "https://github.com/magojohnji/KernelSU/raw/main/kernel/setup.sh",
       "tag": "",
       "apply-patch": true,
