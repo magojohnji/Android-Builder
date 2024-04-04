@@ -39,7 +39,7 @@
 
     "toolchains": [
       {
-        "url": https://github.com/ZyCromerZ/Clang/releases/download/19.0.0git-20240404-release/Clang-19.0.0git-20240404.tar.gz",
+        "url": "https://github.com/ZyCromerZ/Clang/releases/download/19.0.0git-20240404-release/Clang-19.0.0git-20240404.tar.gz",
         "name": "clang",
         "binaryEnv":[
           "bin"]
