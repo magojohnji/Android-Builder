@@ -1,7 +1,7 @@
 [
   {
     "general":{
-      "name": "violet",
+      "name": "violet_kernelsu",
       "build-host": "GitHub-Action",
       "builder-name": "magojohnji",
       "enableKprobes": true,
@@ -27,19 +27,19 @@
     },
 
     "withKernelSU": {
-      "enable": false,
+      "enable": true,
       "installer": "https://github.com/magojohnji/KernelSU/raw/main/kernel/setup.sh",
       "tag": "",
-      "apply-patch": false,
+      "apply-patch": true,
       "ksu_expected_size": "",
       "ksu_expected_hash": "",
-      "make_bootimg": false,
+      "make_bootimg": true,
       "bootimg_link": "https://raw.githubusercontent.com/magojohnji/magojohnji/main/boot/boot_evox_violet.img"
     },
 
     "toolchains": [
       {
-        "url": "https://android.googlesource.com/platform/prebuilts/clang/host/linux-x86/+archive/refs/heads/master/clang-r522817.tar.gz",
+        "url": "https://github.com/ZyCromerZ/Clang/releases/download/19.0.0git-20240404-release/Clang-19.0.0git-20240404.tar.gz",
         "name": "clang",
         "binaryEnv":[
           "bin"]
