@@ -367,7 +367,7 @@ jobs:
           fi
   
       - name: Apply KernelSU patch
-        if: ${{ env.APPLY_KERNELSU_PATCH == 'true' }} && ${{ env.ENABLE_KERNELSU == 'true' }}
+        if: ${{ env.APPLY_KERNELSU_PATCH == 'true' }}
         run: |
             cd $GITHUB_WORKSPACE/kernel_workspace/kernel_dir
             git apply KernelSU-hook.patch
