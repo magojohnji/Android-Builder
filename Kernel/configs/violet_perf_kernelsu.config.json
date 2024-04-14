@@ -1,0 +1,70 @@
+[
+  {
+    "general":{
+      "name": "violet_perf_kernelsu",
+      "build-host": "GitHub-Action",
+      "builder-name": "magojohnji",
+      "enableKprobes": false,
+      "enableOverlayFS": false,
+      "disable-lto": false,
+      "disable-cc-werror": false,
+      "release": true,
+      "remove-unused-packages": true
+    },
+
+    "kernel": {
+      "basic": {
+        "link": "https://github.com/kibria5/android_kernel_xiaomi_violet.git",
+        "branch": "14-ksu",
+        "defconfig": "vendor/violet-perf_defconfig",
+        "arch": "arm64",
+        "image": "Image.gz-dtb",
+        "need-dtbo": true
+      },
+
+      "patches": {
+      }
+    },
+
+    "withKernelSU": {
+      "enable": true,
+      "installer": "https://github.com/magojohnji/KernelSU/raw/main/kernel/setup.sh",
+      "tag": "",
+      "apply-patch": true,
+      "ksu_expected_size": "",
+      "ksu_expected_hash": "",
+      "make_bootimg": true,
+      "bootimg_link": "https://raw.githubusercontent.com/magojohnji/magojohnji/main/boot/boot_evox_violet.img"
+    },
+
+    "toolchains": [
+      {
+        "url": "https://github.com/ZyCromerZ/Clang/releases/download/19.0.0git-20240404-release/Clang-19.0.0git-20240404.tar.gz",
+        "name": "clang",
+        "binaryEnv":[
+          "bin"]
+      }
+    ],
+
+    "ccache": true,
+
+    "enableLXC": false,
+
+    "params": {
+      "CC": "clang",
+      "externalCommands": {
+        "CLANG_TRIPLE": "aarch64-linux-gnu-",
+        "CROSS_COMPILE": "aarch64-linux-gnu-",
+        "CROSS_COMPILE_ARM32": "arm-linux-gnueabi-",
+        "LLVM": "1",
+        "LLVM_IAS": "1"
+      }
+    },
+
+    "AnyKernel3": {
+      "enable": true,
+      "link": "https://github.com/rezaadi0105/AnyKernel3.git",
+      "branch": "single"
+    }
+  }
+]
