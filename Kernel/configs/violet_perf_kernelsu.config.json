@@ -30,10 +30,10 @@
       "enable": true,
       "installer": "https://github.com/magojohnji/KernelSU/raw/main/kernel/setup.sh",
       "tag": "",
-      "apply-patch": true,
+      "apply-patch": false,
       "ksu_expected_size": "",
       "ksu_expected_hash": "",
-      "make_bootimg": true,
+      "make_bootimg": false,
       "bootimg_link": "https://raw.githubusercontent.com/magojohnji/magojohnji/main/boot/boot_evox_violet.img"
     },
 
