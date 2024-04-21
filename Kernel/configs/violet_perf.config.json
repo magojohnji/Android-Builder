@@ -1,7 +1,7 @@
 [
   {
     "general":{
-      "name": "violet_perf_kernelsu",
+      "name": "violet_perf",
       "build-host": "GitHub-Action",
       "builder-name": "magojohnji",
       "enableKprobes": false,
@@ -15,7 +15,7 @@
     "kernel": {
       "basic": {
         "link": "https://github.com/kibria5/android_kernel_xiaomi_violet.git",
-        "branch": "14-ksu",
+        "branch": "14",
         "defconfig": "vendor/violet-perf_defconfig",
         "arch": "arm64",
         "image": "Image.gz-dtb",
@@ -27,7 +27,7 @@
     },
 
     "withKernelSU": {
-      "enable": true,
+      "enable": false,
       "installer": "https://github.com/magojohnji/KernelSU/raw/main/kernel/setup.sh",
       "tag": "",
       "apply-patch": false,
