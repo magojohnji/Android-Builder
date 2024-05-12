@@ -23,7 +23,9 @@
       },
 
       "patches": {
-        "legacy-hook.patch": "./legacy-hook.patch"
+        "legacy-hook": [
+          "path": "./legacy-hook.patch"
+        ]
       }
     },
 
