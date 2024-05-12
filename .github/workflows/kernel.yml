@@ -170,13 +170,13 @@ jobs:
           patches_num=$(echo "$patches" | jq 'length')
           echo "There is $patches_num defined toolchains."
 
-          for patch in $(echo "$patches" | jq -r 'keys[]'); do
-            patch_path=$(echo "$patches" | jq -r ".$patch.path")
+          # for patch in $(echo "$patches" | jq -r 'keys[]'); do
+          #  patch_path=$(echo "$patches" | jq -r ".$patch.path")
 
-            git apply $patch_path
+            git apply legacy-hook.patch
 
             echo "Apply $patch => ($patch_path)"
-          done
+          # done
 
       # Initialize ccache
       - name: Setup ccache
