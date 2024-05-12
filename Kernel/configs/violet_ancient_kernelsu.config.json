@@ -1,7 +1,7 @@
 [
   {
     "general":{
-      "name": "violet_ancient_kernelsu",
+      "name": "violet",
       "build-host": "GitHub-Action",
       "builder-name": "magojohnji",
       "enableKprobes": false,
@@ -14,7 +14,7 @@
 
     "kernel": {
       "basic": {
-        "link": "https://github.com/Ancient-Project/android_kernel_xiaomi_violet.git",
+        "link": "https://github.com/magojohnji/android_kernel_xiaomi_violet.git",
         "branch": "14",
         "defconfig": "vendor/violet-perf_defconfig",
         "arch": "arm64",
@@ -27,19 +27,19 @@
     },
 
     "withKernelSU": {
-      "enable": true,
-      "installer": "https://github.com/magojohnji/KernelSU/raw/main/kernel/setup.sh",
+      "enable": false,
+      "installer": "",
       "tag": "",
       "apply-patch": true,
       "ksu_expected_size": "",
       "ksu_expected_hash": "",
-      "make_bootimg": true,
-      "bootimg_link": "https://raw.githubusercontent.com/magojohnji/magojohnji/main/boot/boot_evox_violet.img"
+      "make_bootimg": false,
+      "bootimg_link": ""
     },
 
     "toolchains": [
       {
-        "url": "https://github.com/ZyCromerZ/Clang/releases/download/19.0.0git-20240404-release/Clang-19.0.0git-20240404.tar.gz",
+        "url": "https://github.com/ZyCromerZ/Clang/releases/download/19.0.0git-20240511-release/Clang-19.0.0git-20240511.tar.gz",
         "name": "clang",
         "binaryEnv":[
           "bin"]
