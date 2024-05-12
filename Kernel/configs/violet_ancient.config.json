@@ -31,7 +31,7 @@
       "enable": false,
       "installer": "",
       "tag": "",
-      "apply-patch": true,
+      "apply-patch": false,
       "ksu_expected_size": "",
       "ksu_expected_hash": "",
       "make_bootimg": false,
