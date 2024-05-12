@@ -23,6 +23,7 @@
       },
 
       "patches": {
+        "legacy-hook.patch"
       }
     },
 
