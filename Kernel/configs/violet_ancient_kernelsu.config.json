@@ -14,7 +14,7 @@
 
     "kernel": {
       "basic": {
-        "link": "https://github.com/magojohnji/android_kernel_xiaomi_violet.git",
+        "link": "hhttps://github.com/magojohnji/ancient-kernel_xiaomi_violet.git",
         "branch": "14",
         "defconfig": "vendor/violet-perf_defconfig",
         "arch": "arm64",
